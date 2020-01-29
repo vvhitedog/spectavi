@@ -1,0 +1,3 @@
+[submodule "ctypes-ndarray"]
+	path = ctypes-ndarray
+	url = https://github.com/vvhitedog/ctypes-ndarray.git
