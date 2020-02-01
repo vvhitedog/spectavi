@@ -1,5 +1,4 @@
 #Spectavi
-=========
 
 Multi-view geometry and multi-view stereo problems are fundamental problems in
 3D reconstruction. Modern implementations tend to obscure the fundamental models
