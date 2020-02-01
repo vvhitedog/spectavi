@@ -5,8 +5,11 @@ The muti-view-geometry library of the spectavi project.
 """
 
 from __libspectavi import clib
-
+from cndarray.ndarray import NdArray
+import ctypes as ct
 from numpy.ctypeslib import ndpointer
+import numpy as np
+
 
 
 def hnormalize(x):
@@ -115,7 +118,7 @@ ransac_fitter
 ==================================================================================
 """
 
-_ransac_fitter = _lib.ransac_fitter
+_ransac_fitter = clib.ransac_fitter
 _ransac_fitter.restype = None
 _ransac_fitter.argtypes = [ndpointer(ct.c_double, flags="C_CONTIGUOUS"),
                            ndpointer(ct.c_double, flags="C_CONTIGUOUS"),
@@ -224,7 +227,7 @@ seven_point_algorithm
 ==================================================================================
 """
 
-_seven_point_algorithm = _lib.seven_point_algorithm
+_seven_point_algorithm = clib.seven_point_algorithm
 _seven_point_algorithm.restype = None
 _seven_point_algorithm.argtypes = [ndpointer(ct.c_double, flags="C_CONTIGUOUS"),
                                    ndpointer(
@@ -253,7 +256,7 @@ dlt_triangulate
 """
 
 
-_dlt_triangulate = _lib.dlt_triangulate
+_dlt_triangulate = clib.dlt_triangulate
 _dlt_triangulate.restype = None
 _dlt_triangulate.argtypes = [ndpointer(ct.c_double, flags="C_CONTIGUOUS"),
                              ndpointer(ct.c_double, flags="C_CONTIGUOUS"),
@@ -263,7 +266,7 @@ _dlt_triangulate.argtypes = [ndpointer(ct.c_double, flags="C_CONTIGUOUS"),
                              ndpointer(ct.c_double, flags="C_CONTIGUOUS"), ]
 
 
-_dlt_reprojection_error = _lib.dlt_reprojection_error
+_dlt_reprojection_error = clib.dlt_reprojection_error
 _dlt_reprojection_error.restype = None
 _dlt_reprojection_error.argtypes = [ndpointer(ct.c_double, flags="C_CONTIGUOUS"),
                                     ndpointer(
@@ -297,6 +300,10 @@ def dlt_triangulate(P0, P1, x, xp, ret_error=False):
         dst = np.empty((npt, 4))
         _dlt_triangulate(P0, P1, npt, x, xp, dst)
     return dst
+
+
+def dlt_reprojection_error(P0, P1, x, xp):
+    return dlt_triangulate(P0, P1, x, xp, ret_error=True)
 
 """
 ==================================================================================

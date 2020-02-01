@@ -14,7 +14,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 find_package(Eigen3 REQUIRED)
 
-set(CNDARRAY_ROOT  ctypes-ndarray )
+set(CNDARRAY_ROOT  ctypes_ndarray )
 set(CNDARRAY_INCLUDE_DIR ${CNDARRAY_ROOT}/src/ )
 
 set(SRCS src/Spectavi.cpp)

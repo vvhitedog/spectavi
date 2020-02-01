@@ -4,27 +4,12 @@ import sys
 import platform
 import subprocess
 
-from setuptools import setup, Extension
+from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 
 from setuptools.command.install import install as _install
 import inspect
-
-
-build_dir = ''
-
-
-def _post_install(dir):
-    global build_dir
-    subprocess.check_call(['make', 'install', ], cwd=build_dir)
-
-
-class install(_install):
-    def run(self):
-        self.do_egg_install()
-        self.execute(_post_install, (self.install_lib,),
-                     msg="Running cmake install task")
 
 
 class CMakeExtension(Extension):
@@ -85,8 +70,6 @@ class CMakeBuild(build_ext):
             os.makedirs(self.build_temp)
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
-        global build_dir
-        build_dir = self.build_temp 
 
 
 def get_version_from_cmake_file(cmake_file):
@@ -102,7 +85,7 @@ def get_version_from_cmake_file(cmake_file):
 
 
 __version__ = get_version_from_cmake_file('CMakeLists.txt')
-
+print 'packages = ', find_packages() + find_packages(where='ctypes-ndarray')
 
 setup(
     name='spectavi',
@@ -112,10 +95,10 @@ setup(
     description='A minimalistic multi-view stereo and geometry library.',
     long_description='',
     ext_modules=[CMakeExtension('spectavi')],
-    cmdclass=dict(build_ext=CMakeBuild,install=install),
+    cmdclass=dict(build_ext=CMakeBuild),
     test_suite='nose.collector',
     tests_require=['nose'],
-    install_requires=['numpy',],
+    install_requires=['numpy','cndarray'],
     packages=['spectavi'],
     zip_safe=False,
 )
