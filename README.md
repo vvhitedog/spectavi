@@ -1,4 +1,4 @@
-#Spectavi
+# Spectavi
 
 Multi-view geometry and multi-view stereo problems are fundamental problems in
 3D reconstruction. Modern implementations tend to obscure the fundamental models
@@ -10,8 +10,7 @@ is largely a labor of love and learning, at least at this point. As of writing
 this today, Spectavi is not meant to be competitive with more complete MVG or
 MVS packages.
 
-Design Philosophy
-=================
+## Design Philosophy
 
 Spectavi is a largely python project with a C++ backend to make certain tasks
 more managable for high-resolution datasets.
@@ -29,8 +28,7 @@ examples are structured in a way that modularly show individual tasks that must
 be solved in either the MVG or MVS problems, and can be chained together
 sequentially to produce a useful product using a series of steps.
 
-Self Contained
-==============
+## Self Contained
 
 This library is meant to be as self-contained as possible. However, some
 algorithms that give good results (ex. SIFT or approximate NN) are complex
@@ -44,8 +42,7 @@ The only singular dependency that does not fit this description is the
 a simple implementation of interfacing numpy data with C++ (and vice-versa),
 which Spectavi adopts into its methodology.
 
-Install
-=======
+## Install
 
 Spectavi has been desinged in Python 2.7, and may not work with newer versions.
 The only python dependecies are numpy and cndarray. Installation of numpy
@@ -57,16 +54,14 @@ it, each with their own pros and cons.)
 3. Install `cndarray` for user (for global install remove `--user` and run as root): `pushd ctypes_ndarray && python setup.py install --user && popd` 
 4. Install `spectavi` for user (for global install remove `--user` and run as root): `python setup.py install --user`
 
-Build
-======
+## Build
 
 To just build Spectavi, the instructions are almost the same as install, except instead of step 4., replace with 
 
 4. Build `spectavi`: `python setup.py build`
 
 
-Tests
-=====
+## Tests
 
 Spectavi uses nose tests and python's unittest to do unit testing. To run unit
 tests, make sure that you can successfully build Spectavi, then use
@@ -75,8 +70,7 @@ tests, make sure that you can successfully build Spectavi, then use
 * Run `python setup.py  nosetests` to not see print statements.
 
 
-Debugging
-=========
+## Debugging
 
 To enable debugging in any context, Spectavi can be built with debugging enabled for the C++ backend.
 
