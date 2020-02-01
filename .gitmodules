@@ -1,3 +1,6 @@
 [submodule "ctypes-ndarray"]
 	path = ctypes-ndarray
 	url = https://github.com/vvhitedog/ctypes-ndarray.git
+[submodule "vlfeat"]
+	path = vlfeat
+	url = https://github.com/vlfeat/vlfeat
