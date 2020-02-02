@@ -6,3 +6,4 @@ install:
   - pip install numpy 
   - pushd ctypes_ndarray && python setup.py install && popd
   - python setup.py build 
+script: python setup.py nosetests
