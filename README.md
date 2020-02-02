@@ -39,6 +39,9 @@ is to elucidate,) but would be folly to overlook. In cases like this, external
 projects which have high-quality implementations are linked as dependencies of
 Spectavi through git-submodules. 
 
+Outside of these algorithm-spefic dependencies, there are a few dependencies 
+for the backend C++ code which are currently: Eigen3.
+
 The only singular dependency that does not fit this description is the
 [ctypes_ndarray](https://github.com/vvhitedog/ctypes_ndarray) project, which is
 a simple implementation of interfacing numpy data with C++ (and vice-versa),
@@ -77,7 +80,11 @@ Notes:
 Spectavi has been desinged in Python 2.7, and may not work with newer versions.
 The only python dependecies are numpy and cndarray. Installation of numpy
 is fairly standard and is not described here (since there are many ways to do
-it, each with their own pros and cons.)
+it, each with their own pros and cons.) 
+
+There is a dependency of the C++ code for the Eigen3 library, which can be
+installed through various means (check a package manager under linux, for
+example under fedora `dnf install eigen3-devel` installs the package.)
 
 1. Clone the repo: `git clone https://github.com/vvhitedog/spectavi`
 2. Init and update all submodules inside the repo: `git submodule update --init --recursive`
