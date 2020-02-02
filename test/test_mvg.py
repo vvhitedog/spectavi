@@ -3,7 +3,7 @@ from nose.plugins.attrib import attr
 import numpy as np
 from spectavi import mvg
 
-__ntestcases__ = 1000
+__ntestcases__ = 100
 
 def skew_symmetric_matrix(s):
     mat = np.zeros((3,3))
