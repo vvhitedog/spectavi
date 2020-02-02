@@ -7,3 +7,5 @@ install:
   - pushd ctypes_ndarray && python setup.py install && popd
   - python setup.py build 
 script: python setup.py nosetests
+notifications:
+  email: false
