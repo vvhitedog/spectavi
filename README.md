@@ -1,5 +1,7 @@
 # Spectavi
 
+[![Build Status](https://travis-ci.org/vvhitedog/spectavi.svg?branch=master)](https://travis-ci.org/vvhitedog/spectavi)
+
 Multi-view geometry and multi-view stereo problems are fundamental problems in
 optical 3D reconstruction. Modern implementations tend to obscure the
 fundamental models that they rely on in the complexity of the algorithms that
