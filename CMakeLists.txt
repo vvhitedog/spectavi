@@ -14,11 +14,19 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 find_package(Eigen3 REQUIRED)
 
+# Setup variables for the cndarray project
 set(CNDARRAY_ROOT  ctypes_ndarray )
 set(CNDARRAY_INCLUDE_DIR ${CNDARRAY_ROOT}/src/ )
 
+# Setup variables for the vlfeat project
+set(VLFEAT_ROOT  vlfeat )
+set(VLFEAT_INCLUDE_DIR ${VLFEAT_ROOT} )
+set(VLFEAT_SRCS ${VLFEAT_ROOT}/vl/sift.c )
+
+# Setup the sources that should be compiled
 set(SRCS src/Spectavi.cpp)
+set(SRCS ${SRCS} ${VLFEAT_SRCS} )
 
 add_library(spectavi SHARED ${SRCS})
-target_include_directories(spectavi PRIVATE ${EIGEN3_INCLUDE_DIR} ${CNDARRAY_INCLUDE_DIR})
+target_include_directories(spectavi PRIVATE ${EIGEN3_INCLUDE_DIR} ${CNDARRAY_INCLUDE_DIR} ${VLFEAT_INCLUDE_DIR})
 

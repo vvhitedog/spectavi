@@ -6,5 +6,6 @@
 #include "DltTriangulator.h"
 #include "FundamentalMatrixFitter.h"
 #include "RansacFitter.h"
+#include "Sift.h"
 
 #endif // SPECTAVI_DEFINITIONS_H

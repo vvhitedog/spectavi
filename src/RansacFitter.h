@@ -8,6 +8,9 @@
 #include "FundamentalMatrixFitter.h"
 
 #include <iostream>
+
+namespace spectavi {
+
 #define PROGRESS_BAR_LENGTH 100
 
 template<typename MatrixType = RowMatrixXd, typename MatrixTypeI = RowMatrixXi>
@@ -229,5 +232,9 @@ class RansacFitter {
         }
 
 };
+
+#undef PROGRESS_BAR_LENGTH
+
+}
 
 #endif// SPECTAVI_RANSACFITTER_H

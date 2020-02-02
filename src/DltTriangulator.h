@@ -3,6 +3,9 @@
 
 #include "EigenDefinitions.h"
 
+namespace spectavi {
+
+
 template<typename MatrixType = RowMatrixXd>
 class DltTriangulator {
 
@@ -90,5 +93,7 @@ public:
 	}
 
 };
+
+}
 
 #endif//DLTTRIANGULATOR_H

@@ -6,6 +6,8 @@
 #include <vector>
 #include <random>
 
+namespace spectavi {
+
 template<typename MatrixType = RowMatrixXd>
 class Camera {
 
@@ -105,7 +107,7 @@ private:
 		return ret;
 	}
 
-	MatrixType compute_line(const Eigen::Ref<const MatrixType> &line,
+    MatrixType compute_line(const Eigen::Ref<const MatrixType> &line,
 			const Eigen::Ref<const MatrixType> &xx) const {
 		// l = [l0,l1,l2]
 		// l . [x,y,1] = 0
@@ -465,5 +467,7 @@ public:
     }
 
 };
+
+}
 
 #endif// SPECTAVI_CAMERA_H

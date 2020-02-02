@@ -4,12 +4,16 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
+namespace spectavi {
+
 using EigenDStride = Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>;
 template <typename MatrixType> using EigenDRef = Eigen::Ref<MatrixType, 0, EigenDStride>;
 using RowMatrixXd = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 using RowMatrixXi = Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+using RowMatrixXf = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 using RowMatrixXdMap = Eigen::Map<RowMatrixXd>;
 using RowMatrixXiMap = Eigen::Map<RowMatrixXi>;
+using RowMatrixXfMap = Eigen::Map<RowMatrixXf>;
 
 #include <NdArray.h>
 template<typename MatrixType = RowMatrixXd>
@@ -18,6 +22,8 @@ void ndarray_copy_matrix(const MatrixType &mat, NdArray *arr) {
 	ndarray_set_size(arr,mat.rows(),mat.cols());
 	ndarray_alloc(arr);
 	std::copy(mat.data(),mat.data()+mat.size(),(Scalar*)arr->m_data);
+}
+
 }
 
 #endif //SPECTAVI_EIGENDEFINITIONS_H

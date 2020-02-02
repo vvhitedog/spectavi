@@ -8,6 +8,8 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
+namespace spectavi {
+
 #define    TWOPI  6.28318530717958648
 
 template<typename MatrixType = Eigen::MatrixXd>
@@ -340,5 +342,8 @@ public:
 
 };
 
+#undef TWOPI
+
+}
 
 #endif //SFM_FUNDAMENTALMATRIXFITTER_H
