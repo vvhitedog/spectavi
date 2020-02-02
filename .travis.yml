@@ -1,6 +1,6 @@
 language: python
 python: 2.7
 install:
-  - pip install numpy --user
-  - pushd ctypes_ndarray && python setup.py install --user && popd
+  - pip install numpy 
+  - pushd ctypes_ndarray && python setup.py install && popd
   - python setup.py build 
