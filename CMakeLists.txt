@@ -19,14 +19,18 @@ set(CNDARRAY_ROOT  ctypes_ndarray )
 set(CNDARRAY_INCLUDE_DIR ${CNDARRAY_ROOT}/src/ )
 
 # Setup variables for the vlfeat project
+# Note: minimum number of compilation units are chosen to get sift working
 set(VLFEAT_ROOT  vlfeat )
 set(VLFEAT_INCLUDE_DIR ${VLFEAT_ROOT} )
-set(VLFEAT_SRCS ${VLFEAT_ROOT}/vl/sift.c )
+set(VLFEAT_SRCS ${VLFEAT_ROOT}/vl/sift.c ${VLFEAT_ROOT}/vl/generic.c
+  ${VLFEAT_ROOT}/vl/imopv.c ${VLFEAT_ROOT}/vl/imopv_sse2.c
+  ${VLFEAT_ROOT}/vl/host.c ${VLFEAT_ROOT}/vl/random.c)
 
 # Setup the sources that should be compiled
 set(SRCS src/Spectavi.cpp)
 set(SRCS ${SRCS} ${VLFEAT_SRCS} )
 
 add_library(spectavi SHARED ${SRCS})
-target_include_directories(spectavi PRIVATE ${EIGEN3_INCLUDE_DIR} ${CNDARRAY_INCLUDE_DIR} ${VLFEAT_INCLUDE_DIR})
+target_include_directories(spectavi PRIVATE ${EIGEN3_INCLUDE_DIR}
+  ${CNDARRAY_INCLUDE_DIR} ${VLFEAT_INCLUDE_DIR})
 
