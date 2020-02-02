@@ -54,7 +54,7 @@ which Spectavi adopts into its methodology.
 - [x] Seven point algorithm (Estimating Essential Matrix): implementation
 - [x] Seven point algorithm (Estimating Essential Matrix): testing
 - [x] Two-view geometry image rectification given an Essential Matrix: implementation
-- [x] Two-view geometry image rectification given an Essential Matrix: example
+- [ ] Two-view geometry image rectification given an Essential Matrix: example
 
 ### Feature
 - [ ] SIFT feature detection and descriptor (vlfeat): implementation
