@@ -1,1 +1,5 @@
 language: python
+install:
+  - pip install numpy --user
+  - pushd ctypes_ndarray && python setup.py install --user && popd
+  - python setup.py build 
