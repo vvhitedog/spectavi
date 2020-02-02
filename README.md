@@ -44,7 +44,7 @@ which Spectavi adopts into its methodology.
 
 ## Feature Inventory and Roadmap
 
-## Multi View Geometry
+### Multi View Geometry
 - [x] Two-view geometry Essential Matrix estimation: implementation
 - [x] Two-view geometry Essential Matrix estimation: testing
 - [ ] Two-view geometry Essential Matrix estimation: example (real-data)
@@ -56,7 +56,7 @@ which Spectavi adopts into its methodology.
 - [x] Two-view geometry image rectification given an Essential Matrix: implementation
 - [x] Two-view geometry image rectification given an Essential Matrix: example
 
-# Feature
+### Feature
 - [ ] SIFT feature detection and descriptor (vlfeat): implementation
 - [ ] SIFT feature detection and descriptor: testing
 - [ ] SIFT feature detection and descriptor: example
