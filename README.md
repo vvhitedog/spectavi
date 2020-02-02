@@ -82,9 +82,10 @@ The only python dependecies are numpy and cndarray. Installation of numpy
 is fairly standard and is not described here (since there are many ways to do
 it, each with their own pros and cons.) 
 
-There is a dependency of the C++ code for the Eigen3 library, which can be
-installed through various means (check a package manager under linux, for
-example under fedora `dnf install eigen3-devel` installs the package.)
+There is a dependency of the C++ code on the
+[Eigen3](http://eigen.tuxfamily.org/index.php?title=Main_Page) library, which
+can be installed through various means (check a package manager under linux,
+for example under fedora `dnf install eigen3-devel` installs the package.)
 
 1. Clone the repo: `git clone https://github.com/vvhitedog/spectavi`
 2. Init and update all submodules inside the repo: `git submodule update --init --recursive`
@@ -105,6 +106,11 @@ tests, make sure that you can successfully build Spectavi, then use
 
 * Run `python setup.py  nosetests  --nocapture` to see print statements.
 * Run `python setup.py  nosetests` to not see print statements.
+
+## Examples
+
+The examples included with this library require both the `matplotlib` and
+`scipy` python libraries (and possibly `skimage`.)
 
 
 ## Debugging
