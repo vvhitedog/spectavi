@@ -79,8 +79,8 @@ it, each with their own pros and cons.)
 
 1. Clone the repo: `git clone https://github.com/vvhitedog/spectavi`
 2. Init and update all submodules inside the repo: `git submodule update --init --recursive`
-3. Install `cndarray` for user (for global install remove `--user` and run as root): `pushd ctypes_ndarray && python setup.py install --user && popd` 
-4. Install `spectavi` for user (for global install remove `--user` and run as root): `python setup.py install --user`
+3. Install `cndarray` for user (for global install remove `--user` and run as root or in a virtual env): `pushd ctypes_ndarray && python setup.py install --user && popd` 
+4. Install `spectavi` for user (for global install remove `--user` and run as root or in a virtual env): `python setup.py install --user`
 
 ## Build
 
