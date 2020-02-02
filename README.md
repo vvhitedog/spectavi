@@ -1,9 +1,9 @@
 # Spectavi
 
 Multi-view geometry and multi-view stereo problems are fundamental problems in
-3D reconstruction. Modern implementations tend to obscure the fundamental models
-that they rely on in the complexity of the algorithms that are used to do the
-reconstruction tasks necessary.
+optical 3D reconstruction. Modern implementations tend to obscure the
+fundamental models that they rely on in the complexity of the algorithms that
+are used to do the necessary reconstruction tasks.
 
 Spectavi's purpose is to elucidate those very models in a minimalistic way. It
 is largely a labor of love and learning, at least at this point. As of writing
