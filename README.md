@@ -23,7 +23,7 @@ on randomly generated data.) In this sense, the tests can be instructive in
 showing how individual subroutines can be useful on their own.
 
 The examples can be seen as integration tests where several subroutines may
-work together to produce a sensible output from usually *real* data. The
+work together to produce a sensible output from (typically) *real* data. The
 examples are structured in a way that modularly show individual tasks that must
 be solved in either the MVG or MVS problems, and can be chained together
 sequentially to produce a useful product using a series of steps.
@@ -41,6 +41,24 @@ The only singular dependency that does not fit this description is the
 [ctypes_ndarray](https://github.com/vvhitedog/ctypes_ndarray) project, which is
 a simple implementation of interfacing numpy data with C++ (and vice-versa),
 which Spectavi adopts into its methodology.
+
+## Feature Inventory and Roadmap
+
+## View Geometry
+- [x] Two-view geometry Essential Matrix estimation: implementation
+- [x] Two-view geometry Essential Matrix estimation: testing
+- [ ] Two-view geometry Essential Matrix estimation: example (real-data)
+- [x] Two-view geometry point triangulation (DLT Direct Linear Transform): implementation
+- [x] Two-view geometry point triangulation (DLT Direct Linear Transform): testing
+- [ ] Two-view geometry point triangulation (DLT Direct Linear Transform): example (real-data)
+- [x] Seven point algorithm (Estimating Essential Matrix): implementation
+- [x] Seven point algorithm (Estimating Essential Matrix): testing
+- [x] Two-view geometry image rectification given an Essential Matrix: implementation
+- [x] Two-view geometry image rectification given an Essential Matrix: example
+
+Notes:
+- Some algorithms (such as the Seven point algorithm) there is not much point showing it's use on real-data as it would be extremely limited.
+- Some algorithms (such as image rectification) it is easier to verify it works on real-data rather than invent a contrived example for unit-testing.
 
 ## Install
 
