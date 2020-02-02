@@ -1,5 +1,7 @@
 language: python
 python: 2.7
+before_install:
+  - sudo apt-get -y install libeigen3-dev
 install:
   - pip install numpy 
   - pushd ctypes_ndarray && python setup.py install && popd
