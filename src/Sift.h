@@ -9,6 +9,8 @@
 
 namespace spectavi {
 
+#define SIFT_KP_SIZE 132
+
 class SiftFilter {
 
   typedef RowMatrixXf MatrixType;
@@ -18,7 +20,7 @@ class SiftFilter {
 public:
   typedef struct _sift_data {
     double *m_data;
-    _sift_data() { m_data = new double[132]; }
+    _sift_data() { m_data = new double[SIFT_KP_SIZE]; }
     ~_sift_data() { delete[] m_data; }
     double &x() { return m_data[0]; }
     double &y() { return m_data[1]; }
@@ -95,7 +97,6 @@ public:
       for (int i = 0; i < nkeys; ++i) {
         double angles[4];
         int nangles;
-        VlSiftKeypoint ik;
         VlSiftKeypoint const *k;
 
         k = keys + i;
@@ -109,6 +110,7 @@ public:
 
           m_sift_kps.emplace_back();
           sift_data &skp = m_sift_kps.back();
+
           skp.x() = k->x;
           skp.y() = k->y;
           skp.sigma() = k->sigma;
@@ -130,6 +132,17 @@ public:
     if (err) {
       fprintf(stderr, "sift: err: %s (%d)\n", err_msg, err);
       std::exit(1);
+    }
+  }
+
+  size_t get_nkeypoints() const { return m_sift_kps.size(); }
+
+  void get_data(double *out) const {
+    RowMatrixXdMap _out((double *)out, get_nkeypoints(), SIFT_KP_SIZE);
+    size_t irow = 0;
+    for (auto &entry : m_sift_kps) {
+      auto data = entry.m_data;
+      std::copy(data, data + SIFT_KP_SIZE, _out.row(irow++).data());
     }
   }
 };

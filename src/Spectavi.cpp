@@ -120,12 +120,16 @@ void image_pair_rectification(const double *P0, const double *P1,
   ndarray_copy_matrix(rectifier.rectified_idx1(), rectified_idx1);
 }
 
-void sift_filter(const double *im, int wid, int hgt) {
-    RowMatrixXdMap _im(const_cast<double*>(im), hgt, wid);
-    // copy image data into a buffer for sift
-    RowMatrixXf fim = _im.cast<float>();
-    SiftFilter filt(fim);
-    filt.filter();
+void sift_filter(const double *im, int wid, int hgt, NdArray *out) {
+  RowMatrixXdMap _im(const_cast<double *>(im), hgt, wid);
+  // copy image data into a buffer for sift
+  RowMatrixXf fim = _im.cast<float>();
+  SiftFilter filt(fim);
+  filt.filter();
+  size_t nkp = filt.get_nkeypoints();
+  ndarray_set_size(out, nkp, SIFT_KP_SIZE);
+  ndarray_alloc(out);
+  filt.get_data((double*)out->m_data);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////

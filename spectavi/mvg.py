@@ -182,7 +182,8 @@ def ransac_fitter(x0, x1, options={'required_percent_inliers': .9,
         assumed to be the identity.)
     inlier_percent: float
         Percent of points that were deemed inliers of this model.
-    inlier_idx: float
+    inlier_idx: int ndarray
+        The list of indices that are considered inliers.
 
     """
 
