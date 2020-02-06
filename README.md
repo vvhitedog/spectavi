@@ -30,7 +30,7 @@ examples are structured in a way that modularly show individual tasks that must
 be solved in either the MVG or MVS problems, and can be chained together
 sequentially to produce a useful product using a series of steps.
 
-## Self Contained
+## Dependencies
 
 This library is meant to be as self-contained as possible. However, some
 algorithms that give good results (ex. SIFT or approximate NN) are complex
@@ -42,10 +42,13 @@ Spectavi through git-submodules.
 Outside of these algorithm-spefic dependencies, there are a few dependencies 
 for the backend C++ code which are currently: Eigen3.
 
-The only singular dependency that does not fit this description is the
-[ctypes_ndarray](https://github.com/vvhitedog/ctypes_ndarray) project, which is
-a simple implementation of interfacing numpy data with C++ (and vice-versa),
-which Spectavi adopts into its methodology.
+There are as well some python based dependencies: numpy (core), cndarray
+(core), matplotlib (examples),  scipy (examples), skimage(examples).
+
+The singular dependency that does not fit the other descriptions given so
+far is the [ctypes_ndarray](https://github.com/vvhitedog/ctypes_ndarray)
+project, which is a simple implementation of interfacing numpy data with C++
+(and vice-versa), which Spectavi adopts.
 
 ## Feature Inventory and Roadmap
 
@@ -78,9 +81,12 @@ Notes:
 ## Install
 
 Spectavi has been desinged in Python 2.7, and may not work with newer versions.
-The only python dependecies are numpy and cndarray. Installation of numpy
+The only core python dependecies are numpy and cndarray. Installation of numpy
 is fairly standard and is not described here (since there are many ways to do
 it, each with their own pros and cons.) 
+
+For running examples, other python dependencies are: matplotlib, scipy,
+skimage. These may be skipped to just build and run tests.
 
 There is a dependency of the C++ code on the
 [Eigen3](http://eigen.tuxfamily.org/index.php?title=Main_Page) library, which
