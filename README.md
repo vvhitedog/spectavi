@@ -63,7 +63,7 @@ which Spectavi adopts into its methodology.
 
 ### Feature
 - [x] SIFT feature detection and descriptor (vlfeat): implementation
-- [ ] SIFT feature detection and descriptor: testing
+- [x] SIFT feature detection and descriptor: testing
 - [ ] SIFT feature detection and descriptor: example
 - [ ] ANN using [hnswlib](https://github.com/nmslib/hnswlib): implementation
 - [ ] ANN check against real computation: testing
