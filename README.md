@@ -62,13 +62,13 @@ which Spectavi adopts into its methodology.
 - [ ] Two-view geometry image rectification given an Essential Matrix: example
 
 ### Feature
-- [ ] SIFT feature detection and descriptor (vlfeat): implementation
+- [x] SIFT feature detection and descriptor (vlfeat): implementation
 - [ ] SIFT feature detection and descriptor: testing
 - [ ] SIFT feature detection and descriptor: example
-- [ ] ANN using SVD: implementation
 - [ ] ANN using [hnswlib](https://github.com/nmslib/hnswlib): implementation
 - [ ] ANN check against real computation: testing
 - [ ] ANN ratio-test: example
+- [ ] ANN using SVD: implementation (may not implement this, low priority)
 
 Notes:
 - Some algorithms (such as the Seven point algorithm) there is not much point showing it's use on real-data as it would be extremely limited.
