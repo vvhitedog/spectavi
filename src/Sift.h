@@ -3,6 +3,7 @@
 
 #include "EigenDefinitions.h"
 #include <iostream>
+#include <list>
 
 #include <vl/generic.h>
 #include <vl/sift.h>
@@ -18,16 +19,17 @@ class SiftFilter {
   typedef Eigen::Map<MatrixType> MatrixTypeMap;
 
 public:
-  typedef struct _sift_data {
+  class sift_data {
+  public:
     double *m_data;
-    _sift_data() { m_data = new double[SIFT_KP_SIZE]; }
-    ~_sift_data() { delete[] m_data; }
+    sift_data() { m_data = new double[SIFT_KP_SIZE]; }
+    ~sift_data() { delete[] m_data; }
     double &x() { return m_data[0]; }
     double &y() { return m_data[1]; }
     double &sigma() { return m_data[2]; }
     double &angle() { return m_data[3]; }
     double *desc() { return m_data + 4; }
-  } sift_data;
+  };
 
 private:
   MatrixTypeMap m_im;
@@ -39,7 +41,7 @@ private:
   int m_S = 3;
   int m_omin = -1;
 
-  std::vector<sift_data> m_sift_kps; // keypoint-descriptors
+  std::list<sift_data> m_sift_kps; // keypoint-descriptors
 
 public:
   SiftFilter(const Eigen::Ref<const MatrixType> &im)
