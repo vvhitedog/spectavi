@@ -5,7 +5,7 @@ from spectavi import mvg
 
 __ntestcases__ = 100
 
-np.random.seed(202002)
+np.random.seed(0xdeadbeef)
 
 def skew_symmetric_matrix(s):
     mat = np.zeros((3,3))
