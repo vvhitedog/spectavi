@@ -85,7 +85,6 @@ def get_version_from_cmake_file(cmake_file):
 
 
 __version__ = get_version_from_cmake_file('CMakeLists.txt')
-print 'packages = ', find_packages() + find_packages(where='ctypes-ndarray')
 
 setup(
     name='spectavi',

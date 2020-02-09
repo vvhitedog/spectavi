@@ -110,8 +110,11 @@ To just build Spectavi, the instructions are almost the same as install, except 
 Spectavi uses nose tests and python's unittest to do unit testing. To run unit
 tests, make sure that you can successfully build Spectavi, then use
 
-* Run `python setup.py  nosetests  --nocapture` to see print statements.
-* Run `python setup.py  nosetests` to not see print statements.
+* Run `python setup.py  <nosetests|test>  --nocapture` to see print statements.
+* Run `python setup.py  <nosetests|test>` to not see print statements.
+
+Notes:
+- Above `<nosetests|test>` means to choose either `nosetests` or `test` as the parameter. `test` will work by detault, but `nosetests` only if you  have the `nose` package installed.
 
 ## Examples
 
