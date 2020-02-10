@@ -4,3 +4,6 @@
 [submodule "vlfeat"]
 	path = vlfeat
 	url = https://github.com/vlfeat/vlfeat
+[submodule "hnswlib"]
+	path = hnswlib
+	url = https://github.com/nmslib/hnswlib
