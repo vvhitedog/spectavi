@@ -38,17 +38,18 @@ class FeatureTests(TestCase):
         x = np.random.randn(xrows, dim).astype('float32')
         y = np.random.randn(yrows, dim).astype('float32')
         nni = feature.ann_hnswlib(x, y)
+
         def brute_force_nn_batched(x, y, k=2):
             bs = 1000
             res = list()
             for i in range(0, yrows, bs):
                 dist = np.sum(np.square(x.reshape(-1, 1, dim) -
                                         y[i:i+bs].reshape(1, -1, dim)), axis=-1)
-                gt_nni = np.argsort(dist, axis=0)[:2].T
+                gt_nni = np.argsort(dist, axis=0)[:k].T
                 res.append(gt_nni)
             return np.vstack(res)
         gt_nni = brute_force_nn_batched(x, y)
         max_diff_count = np.sum(
             np.abs(np.min(gt_nni, axis=-1) - np.min(nni, axis=-1)) > 0)
         allowed_diff = round(.3*yrows)
-        assert(max_diff_count<allowed_diff)
+        assert(max_diff_count < allowed_diff)
