@@ -57,7 +57,7 @@ class MultiViewGeometryTests(TestCase):
                           'singular_value_ratio_allowed': 3e-2,
                           'progressbar': False}
         ransac = mvg.ransac_fitter(x0, x1, options=ransac_options)
-        assert ransac['success']
+        self.assertTrue(ransac['success'])
         rE = ransac['essential']
 
         _, s, _ = np.linalg.svd(rE)
@@ -76,7 +76,7 @@ class MultiViewGeometryTests(TestCase):
             print rE
             print rE / E
 
-        assert np.std(rE / E) < 1e-2
+        self.assertTrue(np.std(rE / E) < 1e-2)
 
     def test_dlt_reprojection_error(self):
         """
@@ -89,7 +89,7 @@ class MultiViewGeometryTests(TestCase):
             x0 = np.dot(P0, X0)
             x1 = np.dot(P1, X0)
             err = mvg.dlt_reprojection_error(P0, P1, x0, x1)
-            assert abs(err) < 1e-3
+            self.assertTrue(abs(err) < 1e-3)
 
     def test_dlt_post_conditions(self):
         """
@@ -105,11 +105,11 @@ class MultiViewGeometryTests(TestCase):
             X = mvg.dlt_triangulate(P0, P1, x0, x1).ravel()
             X /= X[3]
             X0 /= X0[3]
-            assert np.allclose(X, X0)
+            self.assertTrue(np.allclose(X, X0))
             rx0 = np.dot(P0, X)
             rx1 = np.dot(P1, X)
-            assert np.allclose(np.cross(rx0, x0), np.zeros(3))
-            assert np.allclose(np.cross(rx1, x1), np.zeros(3))
+            self.assertTrue(np.allclose(np.cross(rx0, x0), np.zeros(3)))
+            self.assertTrue(np.allclose(np.cross(rx1, x1), np.zeros(3)))
 
     def test_seven_point_algorithm_conditions(self):
         """
@@ -120,12 +120,12 @@ class MultiViewGeometryTests(TestCase):
             x0 = np.random.randn(7, 3)
             x1 = np.random.randn(7, 3)
             FF = mvg.seven_point_algorithm(x0, x1)
-            assert FF.shape[0] % 3 == 0
+            self.assertTrue(FF.shape[0] % 3 == 0)
             nF = FF.shape[0]/3
             for i in range(nF):
                 F = FF[3*i:3*(i+1)]
                 xpTFx = np.sum(np.dot(x1, F) * x0, axis=1)
-                assert np.max(np.abs(xpTFx)) < 1e-10
+                self.assertTrue(np.max(np.abs(xpTFx)) < 1e-10)
 
     def test_seven_point_algorithm_reconstruction(self):
         """
@@ -142,6 +142,7 @@ class MultiViewGeometryTests(TestCase):
             x0 = np.dot(X, P0.T)
             x1 = np.dot(X, P1.T)
             FF = mvg.seven_point_algorithm(x0, x1)
-            assert FF.shape[0] % 3 == 0
+            self.assertTrue(FF.shape[0] % 3 == 0)
             nF = FF.shape[0]/3
-            assert any([np.std(FF[3*i:3*(i+1)]/F0) < 1e-8 for i in range(nF)])
+            self.assertTrue(
+                any([np.std(FF[3*i:3*(i+1)]/F0) < 1e-8 for i in range(nF)]))

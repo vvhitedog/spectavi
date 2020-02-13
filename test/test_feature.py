@@ -25,7 +25,7 @@ class FeatureTests(TestCase):
         im = np.load(impath)['im']
         sf = feature.sift_filter(im)
         # Do the comparison
-        assert np.allclose(sf, precomputed_sf)
+        self.assertTrue(np.allclose(sf, precomputed_sf))
 
     def ann_hnswlib_test(self):
         """
@@ -52,4 +52,4 @@ class FeatureTests(TestCase):
         max_diff_count = np.sum(
             np.abs(np.min(gt_nni, axis=-1) - np.min(nni, axis=-1)) > 0)
         allowed_diff = round(.3*yrows)
-        assert(max_diff_count < allowed_diff)
+        self.assertTrue(max_diff_count < allowed_diff)
