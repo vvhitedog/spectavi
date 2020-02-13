@@ -7,10 +7,10 @@ optical 3D reconstruction. Modern implementations tend to obscure the
 fundamental models that they rely on in the complexity of the algorithms that
 are used to do the necessary reconstruction tasks.
 
-Spectavi's purpose is to elucidate those very models in a minimalistic way. It
-is largely a labor of love and learning, at least at this point. As of writing
-this today, Spectavi is not meant to be competitive with more complete MVG or
-MVS packages.
+Spectavi's purpose is to elucidate those very models in a minimalistic way.
+It is largely a project of passion and learning, at least at this point. As
+of writing this today, Spectavi is not meant to be competitive with more
+complete MVG or MVS packages.
 
 ## Design Philosophy
 
