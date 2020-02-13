@@ -10,10 +10,12 @@ using EigenDStride = Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>;
 template <typename MatrixType> using EigenDRef = Eigen::Ref<MatrixType, 0, EigenDStride>;
 using RowMatrixXd = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 using RowMatrixXi = Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+using RowMatrixXs = Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 using RowMatrixXf = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 using RowMatrixXdMap = Eigen::Map<RowMatrixXd>;
 using RowMatrixXiMap = Eigen::Map<RowMatrixXi>;
 using RowMatrixXfMap = Eigen::Map<RowMatrixXf>;
+using RowMatrixXsMap = Eigen::Map<RowMatrixXs>;
 
 #include <NdArray.h>
 template<typename MatrixType = RowMatrixXd>

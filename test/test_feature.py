@@ -4,9 +4,11 @@ import numpy as np
 from spectavi import feature
 import os
 
+np.random.seed(0xdeadbeef)
+
+
 @attr(speed='fast')
 class FeatureTests(TestCase):
-
 
     def sift_comparison_test(self):
         """
@@ -16,14 +18,37 @@ class FeatureTests(TestCase):
         """
         # Load pre-computed SIFT features
         oneup = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-        datapath = os.path.join(oneup,'data','sift-test','sur-ogre.sift')
+        datapath = os.path.join(oneup, 'data', 'sift-test', 'sur-ogre.sift')
         precomputed_sf = np.loadtxt(datapath)
         # Compute SIFT features using spectavi
-        impath = os.path.join(oneup,'data','sift-test','sur-ogre.npz')
+        impath = os.path.join(oneup, 'data', 'sift-test', 'sur-ogre.npz')
         im = np.load(impath)['im']
         sf = feature.sift_filter(im)
         # Do the comparison
-        assert np.allclose(sf,precomputed_sf)
+        assert np.allclose(sf, precomputed_sf)
 
-
-
+    def ann_hnswlib_test(self):
+        """
+        Compute nearest neighbour matchings using ANN hnswlib library. Ensure
+        that error is capped at about 30%, given the randomly generated data.
+        """
+        xrows = 1000
+        dim = 132
+        yrows = 1000
+        x = np.random.randn(xrows, dim).astype('float32')
+        y = np.random.randn(yrows, dim).astype('float32')
+        nni = feature.ann_hnswlib(x, y)
+        def brute_force_nn_batched(x, y, k=2):
+            bs = 1000
+            res = list()
+            for i in range(0, yrows, bs):
+                dist = np.sum(np.square(x.reshape(-1, 1, dim) -
+                                        y[i:i+bs].reshape(1, -1, dim)), axis=-1)
+                gt_nni = np.argsort(dist, axis=0)[:2].T
+                res.append(gt_nni)
+            return np.vstack(res)
+        gt_nni = brute_force_nn_batched(x, y)
+        max_diff_count = np.sum(
+            np.abs(np.min(gt_nni, axis=-1) - np.min(nni, axis=-1)) > 0)
+        allowed_diff = round(.3*yrows)
+        assert(max_diff_count<allowed_diff)

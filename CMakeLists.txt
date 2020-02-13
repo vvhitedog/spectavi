@@ -26,11 +26,15 @@ set(VLFEAT_SRCS ${VLFEAT_ROOT}/vl/sift.c ${VLFEAT_ROOT}/vl/generic.c
   ${VLFEAT_ROOT}/vl/imopv.c ${VLFEAT_ROOT}/vl/imopv_sse2.c
   ${VLFEAT_ROOT}/vl/host.c ${VLFEAT_ROOT}/vl/random.c)
 
+# Setup variables for the hnswlib project (it's a header-only library)
+set(HNSWLIB_ROOT  hnswlib )
+set(HNSWLIB_INCLUDE_DIR ${HNSWLIB_ROOT} )
+
 # Setup the sources that should be compiled
 set(SRCS src/Spectavi.cpp)
 set(SRCS ${SRCS} ${VLFEAT_SRCS} )
 
 add_library(spectavi SHARED ${SRCS})
 target_include_directories(spectavi PRIVATE ${EIGEN3_INCLUDE_DIR}
-  ${CNDARRAY_INCLUDE_DIR} ${VLFEAT_INCLUDE_DIR})
+  ${CNDARRAY_INCLUDE_DIR} ${VLFEAT_INCLUDE_DIR} ${HNSWLIB_INCLUDE_DIR})
 

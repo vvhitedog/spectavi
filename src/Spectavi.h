@@ -7,5 +7,6 @@
 #include "FundamentalMatrixFitter.h"
 #include "RansacFitter.h"
 #include "Sift.h"
+#include "Hnswlib.h"
 
 #endif // SPECTAVI_DEFINITIONS_H

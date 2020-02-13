@@ -132,6 +132,18 @@ void sift_filter(const double *im, int wid, int hgt, NdArray *out) {
   filt.get_data((double*)out->m_data);
 }
 
+void ann_hnswlib(const float *x, const float *y, int xrows, int yrows,
+                 int dim, int k, NdArray *out) {
+  RowMatrixXfMap _x(const_cast<float *>(x), xrows, dim);
+  RowMatrixXfMap _y(const_cast<float *>(y), yrows, dim);
+  ndarray_set_size(out, yrows, k);
+  ndarray_alloc(out);
+  RowMatrixXsMap _out(reinterpret_cast<size_t*>(out->m_data), yrows, k);
+  Hnswlib<> ann(dim,xrows);
+  ann.add_points(_x);
+  ann.find_approx_neighbours(_y,_out,k);
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 }
