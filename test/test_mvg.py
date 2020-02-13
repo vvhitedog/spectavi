@@ -9,6 +9,19 @@ np.random.seed(0xdeadbeef)
 
 
 def skew_symmetric_matrix(s):
+    """
+    Map a vector to a skew-symmetric matrix.
+
+    Parameters
+    ----------
+    s : ndarray
+        A 1d vector to be mapepd to a skew-symmetric matrix. 
+
+    Returns
+    -------
+    mat: ndarray
+        The skew-symmetric matrix corresponding to the vector `s`.
+    """
     mat = np.zeros((3, 3))
     mat[0, 1] = -s[2]
     mat[0, 2] = s[1]
