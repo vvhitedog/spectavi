@@ -120,6 +120,16 @@ void image_pair_rectification(const double *P0, const double *P1,
   ndarray_copy_matrix(rectifier.rectified_idx1(), rectified_idx1);
 }
 
+/**
+ * @brief SIFT keypoint detection and description generation.
+ * 
+ * @param im Image buffer to apply on, assumed to be grayscale (1-channel),
+ * scaling (seems) uninmportant.
+ * @param wid Width of the image.
+ * @param hgt Height of the image.
+ * @param out Buffer that output will be written to (Ndarray type is required
+ * float.)
+ */
 void sift_filter(const double *im, int wid, int hgt, NdArray *out) {
   RowMatrixXdMap _im(const_cast<double *>(im), hgt, wid);
   // copy image data into a buffer for sift
@@ -132,6 +142,20 @@ void sift_filter(const double *im, int wid, int hgt, NdArray *out) {
   filt.get_data((double*)out->m_data);
 }
 
+/**
+ * @brief Approximate nearest neighbour (ANN) using HNSWlib (L2-distance
+ * metric).
+ * 
+ * @param x Matrix of `dim` dimensional points on each row to be matched
+ * against.
+ * @param y Matrix of `dim` dimensional points on each row to be matched for.
+ * @param xrows  Number of rows in `x`.
+ * @param yrows  Number of rows in `y`.
+ * @param dim  Dimensionality of the points.
+ * @param k Number of top matches to return (with smallest L2 distance).
+ * @param out Buffer that output will be written to (Ndarray type required is
+ * float.)
+ */
 void ann_hnswlib(const float *x, const float *y, int xrows, int yrows,
                  int dim, int k, NdArray *out) {
   RowMatrixXfMap _x(const_cast<float *>(x), xrows, dim);
