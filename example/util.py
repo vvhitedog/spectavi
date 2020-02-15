@@ -1,5 +1,23 @@
 import numpy as np
 from matplotlib import image as mimage
+from time import time
+
+
+class Timer(object):
+    """A simple timer context-manager, taken from 
+    https://blog.usejournal.com/how-to-create-your-own-timing-context-manager-in-python-a0e944b48cf8
+    """
+
+    def __init__(self, description):
+        self.description = description
+
+    def __enter__(self):
+        self.start = time()
+
+    def __exit__(self, type, value, traceback):
+        self.end = time()
+        print("{desc}: {time}s".format(
+            desc=self.description, time=(self.end - self.start)))
 
 
 def rgb_to_gray(rgb):
@@ -40,7 +58,10 @@ def imread(filename, dtype='float64', force_grayscale=False):
     im = mimage.imread(filename)
     if force_grayscale:
         im = rgb_to_gray(im)
-    return im.astype(dtype)
+    im = im.astype(dtype)
+    if dtype == 'float32' or dtype == 'float64':
+        im /= np.max(im)
+    return im
 
 
 def read_txt_matrix(txtf, header=False):

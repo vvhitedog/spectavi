@@ -1,7 +1,7 @@
 """An example showing the computation of SIFT keypoints and descriptors.
 """
 from matplotlib import pyplot as plt
-from util import imread
+from util import imread, Timer
 from spectavi.feature import sift_filter
 import argparse
 
@@ -22,7 +22,8 @@ if __name__ == '__main__':
         # only grayscale supported in SIFT
         im = imread(imagefn, force_grayscale=True)
         # compute SIFT
-        sift_kps = sift_filter(im)
+        with Timer('sift-compute'):
+            sift_kps = sift_filter(im)
         # get x and y coordinates of SIFT features
         x, y = sift_kps[:, :2].T
         plt.figure()
