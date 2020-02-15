@@ -4,11 +4,10 @@
 The feature detection/descriptor library of the spectavi.
 """
 
-from __libspectavi import clib
+from spectavi.__libspectavi import clib
 from cndarray.ndarray import NdArray
 import ctypes as ct
 from numpy.ctypeslib import ndpointer
-import numpy as np
 
 
 """
