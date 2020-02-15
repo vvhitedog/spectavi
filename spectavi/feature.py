@@ -43,7 +43,7 @@ def sift_filter(im):
     """
     if len(im.shape) != 2:
         raise TypeError("Only 2d images are supported.")
-    sift_ret = NdArray()
+    sift_ret = NdArray(dtype='float32')
     hgt, wid = im.shape
     _sift_filter(im, wid, hgt, sift_ret)
     return sift_ret.asarray()
@@ -83,7 +83,7 @@ def ann_hnswlib(x, y, k=2):
     -------
     ann: uint64 ndarray
         The array of size `y.shape[0]` by `k` which is the index into `x`
-        describing the `k` nearest neighbours for each entry of `y`.
+        describing the `k` nearest neighbours for each entry of `y` in descending order.
 
     """
     xrows, xdim = x.shape

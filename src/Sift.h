@@ -139,8 +139,8 @@ public:
 
   size_t get_nkeypoints() const { return m_sift_kps.size(); }
 
-  void get_data(double *out) const {
-    RowMatrixXdMap _out((double *)out, get_nkeypoints(), SIFT_KP_SIZE);
+  void get_data(float *out) const {
+    RowMatrixXfMap _out((float *)out, get_nkeypoints(), SIFT_KP_SIZE);
     size_t irow = 0;
     for (auto &entry : m_sift_kps) {
       auto data = entry.m_data;

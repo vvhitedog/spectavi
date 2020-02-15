@@ -139,7 +139,7 @@ void sift_filter(const double *im, int wid, int hgt, NdArray *out) {
   size_t nkp = filt.get_nkeypoints();
   ndarray_set_size(out, nkp, SIFT_KP_SIZE);
   ndarray_alloc(out);
-  filt.get_data((double*)out->m_data);
+  filt.get_data((float*)out->m_data);
 }
 
 /**
