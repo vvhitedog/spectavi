@@ -67,10 +67,10 @@ project, which is a simple implementation of interfacing numpy data with C++
 ### Feature
 - [x] SIFT feature detection and descriptor (vlfeat): implementation
 - [x] SIFT feature detection and descriptor: testing
-- [ ] SIFT feature detection and descriptor: example
+- [x] SIFT feature detection and descriptor: example
 - [x] ANN using [hnswlib](https://github.com/nmslib/hnswlib): implementation
 - [x] ANN check against real computation: testing
-- [ ] ANN ratio-test: example
+- [x] ANN ratio-test: example
 - [ ] ANN using SVD: implementation (may not implement this, low priority)
 
 Notes:
