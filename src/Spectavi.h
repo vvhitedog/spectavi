@@ -8,5 +8,6 @@
 #include "RansacFitter.h"
 #include "Sift.h"
 #include "Hnswlib.h"
+#include "BruteForceNn.h"
 
 #endif // SPECTAVI_DEFINITIONS_H
