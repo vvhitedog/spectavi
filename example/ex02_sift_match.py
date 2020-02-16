@@ -29,9 +29,9 @@ if __name__ == '__main__':
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('images', metavar='IM', type=str, nargs=2,
                         help='images to compute SIFT')
-    parser.add_argument('--min_ratio', default=5., action='store',
+    parser.add_argument('--min_ratio', default=5., type=float, action='store',
                         help='min-ratio of second min distance to min distance that is accepted (default=5.)')
-    parser.add_argument('--percent_to_show', default=.05, action='store',
+    parser.add_argument('--percent_to_show', default=.05, type=float, action='store',
                         help='percent of matches to show (for legibility) (default=.2)')
     args = parser.parse_args()
     # process each image and store
@@ -45,10 +45,10 @@ if __name__ == '__main__':
     idx0, idx1 = nn_idx.T
     dist0 = np.sum(np.square(x[idx0] - y), axis=-1)
     dist1 = np.sum(np.square(x[idx1] - y), axis=-1)
-    ratio = dist0 / dist1
+    ratio = dist1 / dist0
     # get idx that pass ratio test
     pass_idx = ratio >= args.min_ratio
-    xd = x[idx1[pass_idx]]
+    xd = x[idx0[pass_idx]]
     yd = y[pass_idx]
     # draw concatenated images (re-read color images)
     im0, im1 = imread(args.images[0]), imread(args.images[1])
