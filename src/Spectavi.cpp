@@ -121,14 +121,13 @@ void image_pair_rectification(const double *P0, const double *P1,
 }
 
 /**
- * @brief SIFT keypoint detection and description generation.
- * 
+ * @brief SIFT keypoint detection and description generation
+ *
  * @param im Image buffer to apply on, assumed to be grayscale (1-channel),
- * scaling (seems) uninmportant.
- * @param wid Width of the image.
- * @param hgt Height of the image.
- * @param out Buffer that output will be written to (Ndarray type is required
- * float.)
+ * scaling (seems) uninmportant
+ * @param wid Width of the image
+ * @param hgt Height of the image
+ * @param out Buffer that output will be written to (float NdArray)
  */
 void sift_filter(const double *im, int wid, int hgt, NdArray *out) {
   RowMatrixXdMap _im(const_cast<double *>(im), hgt, wid);
@@ -139,35 +138,84 @@ void sift_filter(const double *im, int wid, int hgt, NdArray *out) {
   size_t nkp = filt.get_nkeypoints();
   ndarray_set_size(out, nkp, SIFT_KP_SIZE);
   ndarray_alloc(out);
-  filt.get_data((float*)out->m_data);
+  filt.get_data((float *)out->m_data);
 }
 
 /**
  * @brief Approximate nearest neighbour (ANN) using HNSWlib (L2-distance
- * metric).
- * 
+ * metric)
+ *
  * @param x Matrix of `dim` dimensional points on each row to be matched
- * against.
- * @param y Matrix of `dim` dimensional points on each row to be matched for.
- * @param xrows  Number of rows in `x`.
- * @param yrows  Number of rows in `y`.
- * @param dim  Dimensionality of the points.
- * @param k Number of top matches to return (with smallest L2 distance).
- * @param out Buffer that output will be written to (Ndarray type required is
- * float.)
+ * against
+ * @param y Matrix of `dim` dimensional points on each row to be matched for
+ * @param xrows  Number of rows in `x`
+ * @param yrows  Number of rows in `y`
+ * @param dim  Dimensionality of the points
+ * @param k Number of top matches to return (with smallest L2 distance)
+ * @param out Buffer that output will be written to (size_t Ndarray)
  */
-void ann_hnswlib(const float *x, const float *y, int xrows, int yrows,
-                 int dim, int k, NdArray *out) {
+void ann_hnswlib(const float *x, const float *y, int xrows, int yrows, int dim,
+                 int k, NdArray *out) {
   RowMatrixXfMap _x(const_cast<float *>(x), xrows, dim);
   RowMatrixXfMap _y(const_cast<float *>(y), yrows, dim);
   ndarray_set_size(out, yrows, k);
   ndarray_alloc(out);
-  RowMatrixXsMap _out(reinterpret_cast<size_t*>(out->m_data), yrows, k);
-  Hnswlib<> ann(dim,xrows);
+  RowMatrixXsMap _out(reinterpret_cast<size_t *>(out->m_data), yrows, k);
+  Hnswlib<> ann(dim, xrows);
   ann.add_points(_x);
-  ann.find_approx_neighbours(_y,_out,k);
+  ann.find_approx_neighbours(_y, _out, k);
 }
 
+/**
+ * @brief nn_bruteforce Nearest neighbour using pseudo-bruteforce technique
+ *
+ * @param x Matrix of `dim` dimensional points on each row to be matched
+ * against
+ * @param y Matrix of `dim` dimensional points on each row to be matched for
+ * @param xrows  Number of rows in `x`
+ * @param yrows  Number of rows in `y`
+ * @param dim  Dimensionality of the points
+ * @param k Number of top matches to return (with smallest L2 distance)
+ * @param p p-value of the norm to compute (`p` > 0 expected)
+ * @param mu Approximation parameter, when `mu`=0 it's exact
+ * @param outidx Buffer that holds idx output (size_t Ndarray)
+ * @param outdist Buffer that holds distance output (float Ndarray)
+ */
+void nn_bruteforce(const float *x, const float *y, int xrows, int yrows,
+                   int dim, int k, float p, float mu, NdArray *outidx,
+                   NdArray *outdist) {
+  RowMatrixXfMap _x(const_cast<float *>(x), xrows, dim);
+  RowMatrixXfMap _y(const_cast<float *>(y), yrows, dim);
+  ndarray_set_size(outidx, yrows, k);
+  ndarray_alloc(outidx);
+  ndarray_set_size(outdist, yrows, k);
+  ndarray_alloc(outdist);
+  RowMatrixXsMap _outidx(reinterpret_cast<size_t *>(outidx->m_data), yrows, k);
+  RowMatrixXfMap _outdist(reinterpret_cast<float *>(outdist->m_data), yrows, k);
+  BruteForceNn<> nn(_x, _y, p, mu);
+  nn.find_neighbours(_outidx, _outdist, k);
+}
+
+void nn_bruteforcei(const int *x, const int *y, int xrows, int yrows, int dim,
+                    int k, float p, float mu, NdArray *outidx,
+                    NdArray *outdist) {
+  RowMatrixXiMap _x(const_cast<int *>(x), xrows, dim);
+  RowMatrixXiMap _y(const_cast<int *>(y), yrows, dim);
+  ndarray_set_size(outidx, yrows, k);
+  ndarray_alloc(outidx);
+  ndarray_set_size(outdist, yrows, k);
+  ndarray_alloc(outdist);
+  RowMatrixXsMap _outidx(reinterpret_cast<size_t *>(outidx->m_data), yrows, k);
+  RowMatrixXiMap _outdist(reinterpret_cast<int *>(outdist->m_data), yrows, k);
+  BruteForceNn<RowMatrixXi> nn(_x, _y, p, mu);
+  nn.find_neighbours(_outidx, _outdist, k);
+}
+
+void kmedians(const float *x, int xrows, int dim, int k) {
+  RowMatrixXfMap _x(const_cast<float *>(x), xrows, dim);
+  KMedians<> kmed(_x,k);
+  kmed.run();
+}
 //////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 }

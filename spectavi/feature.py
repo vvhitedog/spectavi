@@ -8,6 +8,7 @@ from spectavi.__libspectavi import clib
 from cndarray.ndarray import NdArray
 import ctypes as ct
 from numpy.ctypeslib import ndpointer
+import numpy as np
 
 
 """
@@ -83,7 +84,8 @@ def ann_hnswlib(x, y, k=2):
     -------
     ann: uint64 ndarray
         The array of size `y.shape[0]` by `k` which is the index into `x`
-        describing the `k` nearest neighbours for each entry of `y` in descending order.
+        describing the `k` nearest neighbours for each entry of `y` in
+        ascending order of distance.
 
     """
     xrows, xdim = x.shape
@@ -94,6 +96,102 @@ def ann_hnswlib(x, y, k=2):
     _ann_hnswlib(x, y, xrows, yrows, dim, k, ann_ret)
     return ann_ret.asarray()
 
+
+"""
+==================================================================================
+nn_bruteforce
+==================================================================================
+"""
+
+_nn_bruteforce = clib.nn_bruteforce
+_nn_bruteforce.restype = None
+_nn_bruteforce.argtypes = [ndpointer(ct.c_float, flags="C_CONTIGUOUS"),
+                           ndpointer(ct.c_float, flags="C_CONTIGUOUS"),
+                           ct.c_int,
+                           ct.c_int,
+                           ct.c_int,
+                           ct.c_int,
+                           ct.c_float,
+                           ct.c_float,
+                           ct.POINTER(NdArray),
+                           ct.POINTER(NdArray), ]
+
+_nn_bruteforcei = clib.nn_bruteforcei
+_nn_bruteforcei.restype = None
+_nn_bruteforcei.argtypes = [ndpointer(ct.c_int, flags="C_CONTIGUOUS"),
+                            ndpointer(ct.c_int, flags="C_CONTIGUOUS"),
+                            ct.c_int,
+                            ct.c_int,
+                            ct.c_int,
+                            ct.c_int,
+                            ct.c_float,
+                            ct.c_float,
+                            ct.POINTER(NdArray),
+                            ct.POINTER(NdArray), ]
+
+
+def nn_bruteforce(x, y, p=.5, mu=0., k=2, use_int=False):
+    """
+    Nearest Neighbour algorithm using a pseudo-bruteforce technique.
+
+    Can be used to compute nearest neighbours for any p-norm.
+
+    Parameters
+    ----------
+    x : float32 ndarray
+        The database to query against.
+    y : float32 ndarray
+        The query.
+    p : float, optional
+        p-value of norm.
+    mu : float, optional
+        Approximation value, when `mu`=0 computation is exact.
+    k : int, optional
+        The amount of nearest neighbours to calculate.
+
+    Returns
+    -------
+    nn_idx: uint64 ndarray
+        The array of size `y.shape[0]` by `k` which is the index into `x`
+        describing the `k` nearest neighbours for each entry of `y` in
+        ascending order of distance.
+    nn_idx: float32 ndarray
+        The array of size `y.shape[0]` by `k` which is the distance of the
+        nearest neighbours in ascening order.
+
+    """
+    xrows, xdim = x.shape
+    yrows, ydim = y.shape
+    assert ydim == xdim
+    dim = xdim
+    nn_idx = NdArray(dtype='uint64')
+    if not use_int:
+        nn_dist = NdArray(dtype='float32')
+        _nn_bruteforce(x, y, xrows, yrows, dim, k, p, mu, nn_idx, nn_dist)
+    else:
+        nn_dist = NdArray(dtype='int32')
+        xi = np.round(100 * x).astype('int32')
+        yi = np.round(100 * y).astype('int32')
+        _nn_bruteforcei(xi, yi, xrows, yrows, dim, k, p, mu, nn_idx, nn_dist)
+    return nn_idx.asarray(), nn_dist.asarray()
+
+"""
+==================================================================================
+kmedians
+==================================================================================
+"""
+
+_kmedians = clib.kmedians
+_kmedians.restype = None
+_kmedians.argtypes = [ndpointer(ct.c_float, flags="C_CONTIGUOUS"),
+                      ct.c_int,
+                      ct.c_int,
+                      ct.c_int, ]
+
+
+def kmedians(x, k):
+    xrows, dim = x.shape
+    _kmedians(x, xrows, dim, k)
 
 """
 ==================================================================================

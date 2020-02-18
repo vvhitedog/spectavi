@@ -9,5 +9,6 @@
 #include "Sift.h"
 #include "Hnswlib.h"
 #include "BruteForceNn.h"
+#include "KMedians.h"
 
 #endif // SPECTAVI_DEFINITIONS_H
