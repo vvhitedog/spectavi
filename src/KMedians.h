@@ -59,6 +59,7 @@ private:
   void print_stats() {
     int dim = m_x.cols();
     printf(" stats of each cluster:\n");
+    double mean_median_dist = 0.;
     for (int ik = 0; ik < m_k; ++ik) {
       printf(">cluster id: %d\n", ik);
       std::list<Label> &idx = m_median_idx[ik];
@@ -72,14 +73,17 @@ private:
           dist += std::abs(m_x(ip, id) - m_medians(ik, id));
         }
         mean_dist += dist;
-        max_dist = max_dist < 0 ? dist : std::max(max_dist,dist);
-        min_dist = min_dist < 0 ? dist : std::min(min_dist,dist);
+        max_dist = max_dist < 0 ? dist : std::max(max_dist, dist);
+        min_dist = min_dist < 0 ? dist : std::min(min_dist, dist);
       }
       mean_dist /= idx.size();
+      mean_median_dist += mean_dist;
       printf(">>avg dist: %f\n", mean_dist);
       printf(">>min dist: %f\n", min_dist);
       printf(">>max dist: %f\n", max_dist);
     }
+    mean_median_dist /= m_k;
+    printf("mean median dist: %f\n", mean_median_dist);
   }
 
   bool update_medians() {
@@ -181,13 +185,13 @@ private:
         }
         idx.push_back(_idx);
         // remove item permanently
-//        active.pop();
+        //        active.pop();
         std::pop_heap(active.begin(), active.begin() + heap_size--);
       }
 
       // add the deferred entries back to active heap
       for (auto &x : deferred) {
-//        active.push(x);
+        //        active.push(x);
         active[heap_size] = x;
         std::push_heap(active.begin(), active.begin() + heap_size++);
       }
@@ -237,13 +241,18 @@ public:
     }
   }
 
-  void run(int niter = 1) {
+  void run(int niter = 1, bool verbose = false) {
     initialize_medians();
     int iter = 0;
     do {
+      if (verbose) {
+        print_stats();
+      }
       assign_medians();
     } while (update_medians() && ++iter < niter);
-    print_stats();
+    if (verbose) {
+      print_stats();
+    }
   }
 };
 
