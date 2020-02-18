@@ -73,15 +73,6 @@ class FeatureTests(TestCase):
         y = np.random.randn(yrows, dim).astype('float32')
         nni, nnd = feature.nn_bruteforce(x, y, k=k, p=2., mu=0)
         gt_nni = brute_force_nn_batched(x, y, k)
-
-        #bidx = np.where(np.abs(gt_nni - nni) > 0)[0]
-        #print bidx
-        #print nni[bidx], gt_nni[bidx]
-        #nni, nnd = feature.nn_bruteforce(x, y[bidx], k=k, p=2., mu=0)
-        #gt_nni = brute_force_nn_batched(x, y[bidx], k, v = True)
-        #print nnd
-
-
         max_diff_count = np.sum(
             np.abs(gt_nni - nni) > 0)
         self.assertLessEqual(max_diff_count, 0)
