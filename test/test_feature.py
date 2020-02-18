@@ -77,19 +77,19 @@ class FeatureTests(TestCase):
             np.abs(gt_nni - nni) > 0)
         self.assertLessEqual(max_diff_count, 0)
 
-    def kmedians_test(self):
-        """
-        Smoke-screen test for kmedians.
-        """
-        x = np.loadtxt('/home/mgara/Software/spectare/tests/data/castle/100_7101.sift').astype('float32')
-        xrows = x.shape[0]
-        dim = 132
-        kk = 5 # number of cluster we search
-        k = int(np.round(np.sqrt(xrows/kk) * kk))
-        print k
-        x = np.random.randn(xrows, dim).astype('float32')
-        import time
-        start_time = time.time()
-        feature.kmedians(x,k)
-        print 'kmedians time: ', time.time() - start_time
+    #def kmedians_test(self):
+    #    """
+    #    Smoke-screen test for kmedians.
+    #    """
+    #    x = np.loadtxt('/home/mgara/Software/spectare/tests/data/castle/100_7101.sift').astype('float32')
+    #    xrows = x.shape[0]
+    #    dim = 132
+    #    kk = 5 # number of cluster we search
+    #    k = int(np.round(np.sqrt(xrows/kk) * kk))
+    #    print k
+    #    x = np.random.randn(xrows, dim).astype('float32')
+    #    import time
+    #    start_time = time.time()
+    #    feature.kmedians(x,k)
+    #    print 'kmedians time: ', time.time() - start_time
 
