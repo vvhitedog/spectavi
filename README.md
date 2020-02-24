@@ -71,12 +71,16 @@ project, which is a simple implementation of interfacing numpy data with C++
 - [x] ANN using [hnswlib](https://github.com/nmslib/hnswlib): implementation
 - [x] ANN check against real computation: testing
 - [x] ANN ratio-test: example
+- [ ] Highly optimized L1 brute-force nearest-neightbour (hopefully using SSE instructions)
+
+### Defunct
 - [ ] ANN using SVD: implementation (may not implement this, low priority)
 
 Notes:
 - Some algorithms (such as the Seven point algorithm) there is not much point showing it's use on real-data as it would be extremely limited.
 - Some algorithms (such as image rectification) it is easier to verify it works on real-data rather than invent a contrived example for unit-testing.
 - ANN := Approximate Nearest Neighbour
+- Defunct: Action items that will not be pursued further
 
 ## Install
 
