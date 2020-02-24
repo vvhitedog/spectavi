@@ -211,6 +211,21 @@ void nn_bruteforcei(const int *x, const int *y, int xrows, int yrows, int dim,
   nn.find_neighbours(_outidx, _outdist, k);
 }
 
+void nn_bruteforcel1k2(const uint8_t *x, const uint8_t *y, int xrows, int yrows,
+                       int dim, NdArray *outidx, NdArray *outdist) {
+  const int K = 2;
+  RowMatrixXu8Map _x(const_cast<uint8_t *>(x), xrows, dim);
+  RowMatrixXu8Map _y(const_cast<uint8_t *>(y), yrows, dim);
+  ndarray_set_size(outidx, yrows, K);
+  ndarray_alloc(outidx);
+  ndarray_set_size(outdist, yrows, K);
+  ndarray_alloc(outdist);
+  RowMatrixXsMap _outidx(reinterpret_cast<size_t *>(outidx->m_data), yrows, K);
+  RowMatrixXiMap _outdist(reinterpret_cast<int *>(outdist->m_data), yrows, K);
+  BruteForceNnL1K2<> nn(_x, _y);
+  nn.find_neighbours(_outidx, _outdist);
+}
+
 void kmedians(const float *x, int xrows, int dim, int k) {
   RowMatrixXfMap _x(const_cast<float *>(x), xrows, dim);
   KMedians<> kmed(_x, k);
