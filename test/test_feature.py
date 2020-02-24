@@ -7,18 +7,23 @@ import os
 np.random.seed(0xdeadbeef)
 
 
-def brute_force_nn_batched(x, y, k=2):
+def brute_force_nn_batched(x, y, k=2, p=2, get_dist=False):
     """Bruteforce nearest neighbour computation."""
+    p_norm = np.abs if p == 1 else np.square
     bs = 1000
     res = list()
+    resd = list()
     yrows = y.shape[0]
     dim = y.shape[1]
     for i in range(0, yrows, bs):
-        dist = np.sum(np.square(x.reshape(-1, 1, dim) -
-                                y[i:i + bs].reshape(1, -1, dim)), axis=-1)
+        dist = np.sum(p_norm(x.reshape(-1, 1, dim) -
+                             y[i:i + bs].reshape(1, -1, dim)), axis=-1)
         gt_nni = np.argsort(dist, axis=0)[:k].T
         res.append(gt_nni)
-    return np.vstack(res)
+        if get_dist:
+            gt_nnd = np.sort(dist, axis=0)[:k].T
+            resd.append(gt_nnd)
+    return np.vstack(res) if not get_dist else [np.vstack(res), np.vstack(resd)]
 
 
 @attr(speed='fast')
@@ -93,3 +98,24 @@ class FeatureTests(TestCase):
         max_diff_count = np.sum(np.abs(nni - nni_bf) > 0)
         allowed_diff = 2*round(.4 * yrows)
         self.assertLessEqual(max_diff_count, allowed_diff)
+
+    def nn_bruteforcel1k2_test(self):
+        """
+        Compute nearest neighbour matchings using nn_bruteforcel1k2. Basic
+        benchmarking shows its about 10x faster than other brute-force
+        approaches.
+        """
+        xrows = 200
+        dim = 144
+        yrows = 200
+        k = 2
+        x = np.random.uniform(
+            low=0, high=256, size=(xrows, dim)).astype('uint8')
+        y = np.random.uniform(
+            low=0, high=256, size=(yrows, dim)).astype('uint8')
+        _, nnd = feature.nn_bruteforcel1k2(x, y)
+        _, gt_nnd = brute_force_nn_batched(
+            x.astype('int32'), y.astype('int32'), k, p=1, get_dist=True)
+        max_diff_count = np.sum(
+            np.abs(gt_nnd - nnd) > 0)
+        self.assertLessEqual(max_diff_count, 0)

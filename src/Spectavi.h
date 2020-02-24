@@ -10,5 +10,6 @@
 #include "Hnswlib.h"
 #include "BruteForceNn.h"
 #include "KMedians.h"
+#include "BruteForceNnL1K2.h"
 
 #endif // SPECTAVI_DEFINITIONS_H
