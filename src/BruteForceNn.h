@@ -13,6 +13,7 @@ template <typename MatrixType = RowMatrixXf,
           typename MatrixTypeLabel = RowMatrixXs>
 class BruteForceNn {
   typedef typename MatrixType::Scalar Scalar;
+  typedef typename MatrixTypeLabel::Scalar Label;
   typedef Eigen::Map<MatrixType> MatrixTypeMap;
 
 private:
@@ -31,9 +32,26 @@ public:
 
   void find_neighbours(Eigen::Ref<MatrixTypeLabel> out_idx,
                        Eigen::Ref<MatrixType> out_dist, int k = 2) const {
+    std::unordered_set<Label> null;
+    find_neighbours(out_idx, out_dist, null, null, k);
+  }
+
+  void find_neighbours(Eigen::Ref<MatrixTypeLabel> out_idx,
+                       Eigen::Ref<MatrixType> out_dist,
+                       std::unordered_set<Label> &filter_x,
+                       std::unordered_set<Label> &filter_y, int k = 2) const {
 
     int dim = m_x.cols();
-    for (int irow = 0; irow < m_y.rows(); ++irow) {
+    int yrows = m_y.rows();
+    int xrows = m_x.rows();
+    int ylimit = filter_y.empty() ? yrows : filter_y.size();
+    int xlimit = filter_x.empty() ? xrows : filter_x.size();
+
+    auto yit = filter_y.begin();
+
+    for (int ir = 0; ir < ylimit; ++ir) {
+      auto xit = filter_x.begin();
+      int irow = filter_y.empty() ? ir : *(yit++);
       // use a heap to track top neighbours
       std::priority_queue<std::pair<Scalar, int>,
                           std::vector<std::pair<Scalar, int>>>
@@ -43,7 +61,8 @@ public:
       // setup worst distance
       Scalar worst_dist = -1;
       // compute the best match for every possible row in x
-      for (int irowx = 0; irowx < m_x.rows(); ++irowx) {
+      for (int irx = 0; irx < xlimit; ++irx) {
+        int irowx = filter_x.empty() ? irx : *(xit++);
         // compute distance under lp norm
         Scalar distp = 0;
         bool prune = false;
