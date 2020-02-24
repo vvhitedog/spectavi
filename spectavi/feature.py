@@ -181,17 +181,31 @@ kmedians
 ==================================================================================
 """
 
-_kmedians = clib.kmedians
-_kmedians.restype = None
-_kmedians.argtypes = [ndpointer(ct.c_float, flags="C_CONTIGUOUS"),
-                      ct.c_int,
-                      ct.c_int,
-                      ct.c_int, ]
+_nn_kmedians = clib.nn_kmedians
+_nn_kmedians.restype = None
+_nn_kmedians.argtypes = [ndpointer(ct.c_float, flags="C_CONTIGUOUS"),
+                         ndpointer(ct.c_float, flags="C_CONTIGUOUS"),
+                         ct.c_int,
+                         ct.c_int,
+                         ct.c_int,
+                         ct.c_int,
+                         ct.c_int,
+                         ct.c_int,
+                         ct.c_int,
+                         ct.POINTER(NdArray),
+                         ct.POINTER(NdArray), ]
 
 
-def kmedians(x, k):
+def nn_kmedians(x, y, k, c=5):
     xrows, dim = x.shape
-    _kmedians(x, xrows, dim, k)
+    yrows, ydim = y.shape
+    nmx = int(np.round(np.sqrt(xrows / c) * c))
+    nmy = int(np.round(np.sqrt(yrows / c) * c))
+    assert ydim == dim
+    nn_idx = NdArray(dtype='uint64')
+    nn_dist = NdArray(dtype='float32')
+    _nn_kmedians(x, y, xrows, yrows, dim, nmx, nmy, c, k, nn_idx, nn_dist)
+    return nn_idx.asarray(), nn_dist.asarray()
 
 """
 ==================================================================================

@@ -213,8 +213,26 @@ void nn_bruteforcei(const int *x, const int *y, int xrows, int yrows, int dim,
 
 void kmedians(const float *x, int xrows, int dim, int k) {
   RowMatrixXfMap _x(const_cast<float *>(x), xrows, dim);
-  KMedians<> kmed(_x,k);
+  KMedians<> kmed(_x, k);
   kmed.run();
+}
+
+void nn_kmedians(const float *x, const float *y, int xrows, int yrows, int dim,
+                 int nmx, int nmy, int c, int k, NdArray *outidx,
+                 NdArray *outdist) {
+  RowMatrixXfMap _x(const_cast<float *>(x), xrows, dim);
+  KMedians<> kmedx(_x, nmx);
+  kmedx.run();
+  RowMatrixXfMap _y(const_cast<float *>(y), yrows, dim);
+  KMedians<> kmedy(_y, nmy);
+  kmedy.run();
+  ndarray_set_size(outidx, yrows, k);
+  ndarray_alloc(outidx);
+  ndarray_set_size(outdist, yrows, k);
+  ndarray_alloc(outdist);
+  RowMatrixXsMap _outidx(reinterpret_cast<size_t *>(outidx->m_data), yrows, k);
+  RowMatrixXfMap _outdist(reinterpret_cast<float *>(outdist->m_data), yrows, k);
+  kmedy.find_nearest_neighbours(kmedx, _outidx, _outdist, c, k);
 }
 //////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////

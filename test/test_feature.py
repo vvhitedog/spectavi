@@ -7,7 +7,7 @@ import os
 np.random.seed(0xdeadbeef)
 
 
-def brute_force_nn_batched(x, y, k=2, v=False):
+def brute_force_nn_batched(x, y, k=2):
     """Bruteforce nearest neighbour computation."""
     bs = 1000
     res = list()
@@ -16,8 +16,6 @@ def brute_force_nn_batched(x, y, k=2, v=False):
     for i in range(0, yrows, bs):
         dist = np.sum(np.square(x.reshape(-1, 1, dim) -
                                 y[i:i + bs].reshape(1, -1, dim)), axis=-1)
-        if v:
-            print np.sort(dist,axis=0)[:k].T
         gt_nni = np.argsort(dist, axis=0)[:k].T
         res.append(gt_nni)
     return np.vstack(res)
@@ -77,19 +75,21 @@ class FeatureTests(TestCase):
             np.abs(gt_nni - nni) > 0)
         self.assertLessEqual(max_diff_count, 0)
 
-    #def kmedians_test(self):
-    #    """
-    #    Smoke-screen test for kmedians.
-    #    """
-    #    x = np.loadtxt('/home/mgara/Software/spectare/tests/data/castle/100_7101.sift').astype('float32')
-    #    xrows = x.shape[0]
-    #    dim = 132
-    #    kk = 5 # number of cluster we search
-    #    k = int(np.round(np.sqrt(xrows/kk) * kk))
-    #    print k
-    #    x = np.random.randn(xrows, dim).astype('float32')
-    #    import time
-    #    start_time = time.time()
-    #    feature.kmedians(x,k)
-    #    print 'kmedians time: ', time.time() - start_time
-
+    def kmedians_test(self):
+        """
+        Compute that kmedians used for Nearest Neigbours gets somewhat
+        sensible results. Overall performance is very disappointing.
+        """
+        xrows = 500
+        dim = 132
+        yrows = xrows
+        nn_k = 2
+        x = np.random.randn(xrows, dim).astype('float32')
+        y = np.random.randn(yrows, dim).astype('float32')
+        y = x.copy()
+        c = 30  # number of cluster we search
+        nni, _ = feature.nn_kmedians(x, y, nn_k, c)
+        nni_bf, _ = feature.nn_bruteforce(x, y, k=nn_k, p=1., mu=0)
+        max_diff_count = np.sum(np.abs(nni - nni_bf) > 0)
+        allowed_diff = 2*round(.4 * yrows)
+        self.assertLessEqual(max_diff_count, allowed_diff)

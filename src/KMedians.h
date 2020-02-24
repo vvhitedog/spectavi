@@ -6,7 +6,10 @@
 #include <queue>
 #include <random>
 #include <set>
+#include <unordered_set>
 #include <vector>
+
+#include "BruteForceNn.h"
 
 namespace spectavi {
 
@@ -241,7 +244,7 @@ public:
     }
   }
 
-  void run(int niter = 1, bool verbose = false) {
+  void run(bool verbose = false, int niter = 1) {
     initialize_medians();
     int iter = 0;
     do {
@@ -252,6 +255,41 @@ public:
     } while (update_medians() && ++iter < niter);
     if (verbose) {
       print_stats();
+    }
+  }
+
+  void find_nearest_neighbours(const KMedians &other,
+                               Eigen::Ref<MatrixTypeLabel> out_idx,
+                               Eigen::Ref<MatrixType> out_dist, int c = 5,
+                               int k = 2) const {
+    // create full brute-force object that will be reused using filtering
+    BruteForceNn<> full_nn(other.m_x, m_x, 1);
+    // Use bruteforce to find nearest neighbours among medians
+    BruteForceNn<> median_nn(other.m_medians, m_medians, 1);
+    MatrixType median_dist(m_medians.rows(), c);
+    MatrixTypeLabel median_idx(m_medians.rows(), c);
+    median_nn.find_neighbours(median_idx, median_dist, c);
+    // collapse each row of median_idx to a single set
+    for (int irow = 0; irow < median_idx.rows(); ++irow) {
+      // create filter for all points in this median
+      std::unordered_set<Label> this_filter;
+      auto &idx = m_median_idx[irow];
+      for (auto &pid : idx) {
+        this_filter.insert(pid);
+      }
+      // create a filter based on the aggregate elements found in all clusters
+      // deemed close to this median cluster
+      std::unordered_set<Label> other_filter;
+      for (int ic = 0; ic < c; ++ic) {
+        int midx = median_idx(irow, ic); // index into other.m_medians
+        auto &idx = other.m_median_idx[midx];
+        for (auto &pid : idx) {
+          other_filter.insert(pid);
+        }
+      }
+      // run the full brute-force nn, however with filters based on kmedians
+      full_nn.find_neighbours(out_idx, out_dist, other_filter, this_filter,
+                              k);
     }
   }
 };
