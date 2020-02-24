@@ -71,7 +71,7 @@ project, which is a simple implementation of interfacing numpy data with C++
 - [x] ANN using [hnswlib](https://github.com/nmslib/hnswlib): implementation
 - [x] ANN check against real computation: testing
 - [x] ANN ratio-test: example
-- [ ] Highly optimized L1 brute-force nearest-neightbour (hopefully using SSE instructions)
+- [x] Highly optimized L1 brute-force nearest-neighbour (hopefully using SSE instructions)
 
 ### Defunct
 - [ ] ANN using SVD: implementation (may not implement this, low priority)
