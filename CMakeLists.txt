@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.9)
 project(spectavi)
 
 set(PROJECT_VERSION_MAJOR 0)
@@ -13,6 +13,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
 find_package(Eigen3 REQUIRED)
+find_package(OpenMP REQUIRED)
 
 # Setup variables for the cndarray project
 set(CNDARRAY_ROOT  ctypes_ndarray )
@@ -37,4 +38,6 @@ set(SRCS ${SRCS} ${VLFEAT_SRCS} )
 add_library(spectavi SHARED ${SRCS})
 target_include_directories(spectavi PRIVATE ${EIGEN3_INCLUDE_DIR}
   ${CNDARRAY_INCLUDE_DIR} ${VLFEAT_INCLUDE_DIR} ${HNSWLIB_INCLUDE_DIR})
+target_link_libraries(spectavi PUBLIC OpenMP::OpenMP_CXX)
+
 

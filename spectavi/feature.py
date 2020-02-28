@@ -136,6 +136,7 @@ _nn_bruteforcel1k2.argtypes = [ndpointer(ct.c_ubyte, flags="C_CONTIGUOUS"),
                                ct.c_int,
                                ct.c_int,
                                ct.c_int,
+                               ct.c_int,
                                ct.POINTER(NdArray),
                                ct.POINTER(NdArray), ]
 
@@ -186,7 +187,7 @@ def nn_bruteforce(x, y, p=.5, mu=0., k=2, use_int=False):
     return nn_idx.asarray(), nn_dist.asarray()
 
 
-def nn_bruteforcel1k2(x, y):
+def nn_bruteforcel1k2(x, y, nthreads=1):
     """
     Highly optimized L1 NN with k=2, and inputs must be 8-unsigned bytes
     aligned to 16-byte boundaries.
@@ -197,8 +198,9 @@ def nn_bruteforcel1k2(x, y):
     dim = xdim
     nn_idx = NdArray(dtype='uint64')
     nn_dist = NdArray(dtype='int32')
-    _nn_bruteforcel1k2(x, y, xrows, yrows, dim, nn_idx, nn_dist)
+    _nn_bruteforcel1k2(x, y, xrows, yrows, dim, nthreads, nn_idx, nn_dist)
     return nn_idx.asarray(), nn_dist.asarray()
+
 
 """
 ==================================================================================

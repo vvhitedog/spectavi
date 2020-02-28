@@ -212,7 +212,7 @@ void nn_bruteforcei(const int *x, const int *y, int xrows, int yrows, int dim,
 }
 
 void nn_bruteforcel1k2(const uint8_t *x, const uint8_t *y, int xrows, int yrows,
-                       int dim, NdArray *outidx, NdArray *outdist) {
+                       int dim, int nthreads, NdArray *outidx, NdArray *outdist) {
   const int K = 2;
   RowMatrixXu8Map _x(const_cast<uint8_t *>(x), xrows, dim);
   RowMatrixXu8Map _y(const_cast<uint8_t *>(y), yrows, dim);
@@ -223,7 +223,7 @@ void nn_bruteforcel1k2(const uint8_t *x, const uint8_t *y, int xrows, int yrows,
   RowMatrixXsMap _outidx(reinterpret_cast<size_t *>(outidx->m_data), yrows, K);
   RowMatrixXiMap _outdist(reinterpret_cast<int *>(outdist->m_data), yrows, K);
   BruteForceNnL1K2<> nn(_x, _y);
-  nn.find_neighbours(_outidx, _outdist);
+  nn.find_neighbours(_outidx, _outdist, nthreads);
 }
 
 void kmedians(const float *x, int xrows, int dim, int k) {

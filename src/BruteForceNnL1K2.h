@@ -57,10 +57,12 @@ public:
   }
 
   void find_neighbours(Eigen::Ref<MatrixTypeLabel> out_idx,
-                       Eigen::Ref<MatrixTypeBig> out_dist) const {
+                       Eigen::Ref<MatrixTypeBig> out_dist,
+                       int nthread = 8) const {
     const int dim = m_x.cols();
     const int n128i = (dim / 16); // number of 128-byte datatypes per row
     // scan through every row
+  #pragma omp parallel for num_threads(nthread)
     for (int irow = 0; irow < m_y.rows(); ++irow) {
       // get local references to outputs
       auto &first_i = out_idx(irow, 0);
