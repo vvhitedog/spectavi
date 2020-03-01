@@ -16,14 +16,43 @@ from matplotlib import pyplot as plt
 from matplotlib import collections as mc
 from util import imread, Timer
 from spectavi.feature import sift_filter, nn_bruteforcel1k2
+from spectavi.mvg import ransac_fitter, dlt_triangulate
 import argparse
 import multiprocessing
+
+
+def write_ply(plyfile, data, rgb=None):
+    """Write a basic ply file using an ndarray of 3d points."""
+    with open(plyfile, 'w') as f:
+        f.write('ply\n')
+        f.write('format ascii 1.0\n')
+        f.write('element vertex %d\n' % data.shape[0])
+        f.write('property float x\n')
+        f.write('property float y\n')
+        f.write('property float z\n')
+        if rgb is not None:
+            f.write('property uchar red\n')
+            f.write('property uchar green\n')
+            f.write('property uchar blue\n')
+        f.write('end_header\n')
+        if rgb is None:
+            for p in data:
+                f.write('%f %f %f\n' % (p[0], p[1], p[2]))
+        else:
+            for p, c in zip(data, rgb):
+                f.write('%f %f %f %d %d %d\n' %
+                        (p[0], p[1], p[2], c[0], c[1], c[2]))
+
+
+def homogeneous(x):
+    """Transforms a matrix of 2d points to 3d homogenous coordinates."""
+    return np.hstack((x, np.ones((x.shape[0], 1))))
 
 
 def normalize_to_ubyte(x):
     """Simple range normalization to an unsigned byte."""
     xrows, dim = x.shape
-    new_dim = int(np.ceil(dim / 16.)*16)
+    new_dim = int(np.ceil(dim / 16.) * 16)
     xx = np.zeros([xrows, new_dim])
     xx[:, :dim] = x
     x = xx
@@ -49,7 +78,7 @@ def step1_sift_detect(args):
     x1, y1 = siftkps[1][:, :2].T
     shift = ims[0].shape[1]
     ax.plot(x0, y0, 'rx', markersize=1)
-    ax.plot(x1+shift, y1, 'bx', markersize=1)
+    ax.plot(x1 + shift, y1, 'bx', markersize=1)
     ax.autoscale()
     ax.set_title('Step1: SIFT Keypoints Detected')
     # End Visualize
@@ -85,7 +114,7 @@ def step2_match_keypoints(args, step1_out):
     lines = np.asarray(zip(zip(x0, y0), zip(x1, y1)))
     # randomize line colors
     rand_idx = np.random.randint(lines.shape[0], size=int(
-        lines.shape[0]*args.percent_to_show))
+        lines.shape[0] * args.percent_to_show))
     lines = lines[rand_idx]
     lc = mc.LineCollection(lines, cmap=plt.cm.gist_ncar, linewidths=1)
     lc.set_array(np.random.random(lines.shape[0]))
@@ -96,9 +125,48 @@ def step2_match_keypoints(args, step1_out):
     return xd, yd
 
 
+def step3_estimate_essential_matrix(args, step2_out):
+    """Estimate an essential matrix using a robust algorithm (RANSAC) with
+    matched keypoints."""
+    xd, yd = step2_out
+    K = np.loadtxt(fname=args.K)
+    iK = np.linalg.inv(K)
+    x0 = np.dot(homogeneous(xd[..., :2]), iK.T)
+    x1 = np.dot(homogeneous(yd[..., :2]), iK.T)
+    ransac_options = {'required_percent_inliers': .7,
+                      'reprojection_error_allowed': 4e-4,
+                      'maximum_tries': 10000,
+                      'find_best_even_in_failure': True,
+                      'singular_value_ratio_allowed': 1e-2,
+                      'progressbar': True}
+    ransac = ransac_fitter(x0, x1, options=ransac_options)
+    # assert ransac['success']
+    rE = ransac['essential']
+    print (' Percent of inliers: ', ransac['inlier_percent'])
+    _, s, _ = np.linalg.svd(rE)
+    rE = rE / s[0]
+    print (' Fundamental Matrix Singular Values: ', s)
+    print (' Singular Values ratio score: ',
+           np.abs(s[0] - s[1]) / np.abs(s[0] + s[1]))
+    return ransac, x0, x1
+
+
+def step4_traingulate_points(args, step3_out):
+    """Triangulate the points output as inliers from the previous step."""
+    ransac, x0, x1 = step3_out
+    idx = ransac['inlier_idx']
+    P1 = ransac['camera']
+    P0 = np.hstack((np.eye(3), np.zeros((3, 1))))
+    RX = dlt_triangulate(P0, P1, x0[idx], x1[idx])
+    RX = RX[..., :] / RX[..., -1].reshape(-1, 1)
+    write_ply("ex.ply", RX)
+
+
 def run(args):
     step1_out = step1_sift_detect(args)
     step2_out = step2_match_keypoints(args, step1_out)
+    step3_out = step3_estimate_essential_matrix(args, step2_out)
+    step4_traingulate_points(args, step3_out)
     plt.show(block=True)
 
 
@@ -114,6 +182,8 @@ if __name__ == '__main__':
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('images', metavar='IM', type=str, nargs=2,
                         help='images to compute SIFT')
+    parser.add_argument('K', metavar='K', type=str,
+                        help='intrinsics for camera (assumption is one camera taking two images')
     parser.add_argument('--min_ratio', default=2., type=float, action='store',
                         help='min-ratio of second min distance to min distance that is accepted (default=2.)')
     parser.add_argument('--percent_to_show', default=.1, type=float, action='store',
