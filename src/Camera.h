@@ -32,7 +32,7 @@ public:
 		m_P = MatrixType::Identity(3, 4);
 	}
 
-	MatrixType get_matrix() const {
+	const MatrixType &get_matrix() const {
 		return m_P;
 	}
 
