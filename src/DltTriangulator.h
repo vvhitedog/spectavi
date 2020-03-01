@@ -14,8 +14,8 @@ private:
 	typedef typename MatrixType::Scalar Scalar;
 	typedef Eigen::Map<MatrixType> MatrixTypeMap;
 
-	MatrixType m_P0;
-	MatrixType m_P1;
+	MatrixTypeMap m_P0;
+	MatrixTypeMap m_P1;
 	MatrixType m_X;
 	MatrixType m_x0;
 	MatrixType m_x1;
@@ -30,8 +30,8 @@ private:
 public:
 
 	DltTriangulator(const Scalar *P0, const Scalar *P1) :
-			m_P0(MatrixTypeMap(const_cast<Scalar*>(P0), 3, 4)),
-			m_P1(MatrixTypeMap(const_cast<Scalar*>(P1), 3, 4)) {
+			m_P0(const_cast<Scalar*>(P0), 3, 4),
+			m_P1(const_cast<Scalar*>(P1), 3, 4) {
 		m_sign_det_M0 = m_P0.block(0, 0, 3, 3).determinant() < 0 ? -1. : 1.;
 		m_sign_det_M1 = m_P1.block(0, 0, 3, 3).determinant() < 0 ? -1. : 1.;
         m_norm_m0 = m_P0.block(0, 2, 3, 1).array().square().sum();
