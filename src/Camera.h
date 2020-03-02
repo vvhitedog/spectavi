@@ -294,7 +294,6 @@ public:
         for ( int i = 0; i < rows*cols; ++i ) {
             idxs.data()[i] = i; // row-major counting
         }
-		std::cout << "extra_rows:" << extra_rows << std::endl;
 		for (int irow = -extra_rows; irow < largest_rows + extra_rows; ++irow) {
 			MatrixType origin(3, 1);
 			origin << 0., irow, 1.;
@@ -372,13 +371,9 @@ public:
 				count++;
 			}
 			avg_ncc /= count;
-			std::cout << " avg_ncc: " << avg_ncc << std::endl;
-			std::cout << " best_score: " << best_score << std::endl;
 			if (avg_ncc > best_score) {
-				std::cout << " accepted " << std::endl;
 				best_score = avg_ncc;
 				sol = _sol;
-				std::cout << " sol: " << std::endl << sol << std::endl;
 			}
 		}
 
