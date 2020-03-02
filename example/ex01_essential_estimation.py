@@ -141,7 +141,7 @@ def step3_estimate_essential_matrix(args, step2_out):
     x1 = np.dot(homogeneous(yd[..., :2]), iK.T)
     with Timer('step3-computation'):
         ransac_quality = {'low': 10000, 'medium': 25000,
-                          'high': 50000, 'ultra': 100000}
+                          'high': 50000, 'ultra': 100000, 'uber': 500000}
         ransac_options = {'required_percent_inliers': .7,
                           'reprojection_error_allowed': 4e-4,
                           'maximum_tries': ransac_quality[args.ransac_quality],
@@ -151,6 +151,7 @@ def step3_estimate_essential_matrix(args, step2_out):
         ransac = ransac_fitter(x0, x1, options=ransac_options)
     # assert ransac['success']
     rE = ransac['essential']
+    print (' Number of keypoints: ', xd.shape[0])
     print (' Percent of inliers: ', ransac['inlier_percent'])
     _, s, _ = np.linalg.svd(rE)
     rE = rE / s[0]
@@ -197,11 +198,37 @@ def step5_rectify_images(args, step4_out):
                + '.bin')
 
 
+def load_cache(args):
+    """Loads a cache if it exists."""
+    filename = os.path.join(args.outdir, 'cache.npz')
+    if os.path.exists(filename):
+        data = np.load(filename)
+        return data['xd'], data['yd']
+    else:
+        return None
+
+
+def save_cache(args, step2_out):
+    """Saves a cache."""
+    filename = os.path.join(args.outdir, 'cache.npz')
+    xd, yd = step2_out
+    np.savez_compressed(filename, xd=xd, yd=yd)
+
+
 def run(args):
     if not os.path.exists(args.outdir):
         os.mkdir(args.outdir)
-    step1_out = step1_sift_detect(args)
-    step2_out = step2_match_keypoints(args, step1_out)
+    if args.cache:
+        cache = load_cache(args)
+    else:
+        cache = None
+    if cache is None:
+        step1_out = step1_sift_detect(args)
+        step2_out = step2_match_keypoints(args, step1_out)
+    else:
+        step2_out = cache
+    if cache is None and args.cache:
+        save_cache(args, step2_out)
     step3_out = step3_estimate_essential_matrix(args, step2_out)
     step4_out = step4_traingulate_points(args, step3_out)
     step5_rectify_images(args, step4_out)
@@ -227,11 +254,13 @@ if __name__ == '__main__':
                         help='min-ratio of second min distance to min distance that is accepted (default=2.)')
     parser.add_argument('--percent_to_show', default=.1, type=float, action='store',
                         help='percent of matches to show (for legibility) (default=.1)')
-    parser.add_argument('--ransac_quality', default='low', choices=['low', 'medium', 'high', 'ultra'], action='store',
+    parser.add_argument('--ransac_quality', default='low', choices=['low', 'medium', 'high', 'ultra', 'uber'], action='store',
                         help='quality of ransac fit to perform (default=low)')
     parser.add_argument('--outdir', default='ex01_out', type=str,
                         help='output is placed in this directory (default="ex01_out")')
     parser.add_argument('--rsf', default=1., type=float, action='store',
                         help='resampling factor (along epipolar lines) when performing rectification (default=1.)')
+    parser.add_argument('--cache', action='store_true',
+                        help='cache the keypoint matches per session, if a cached output exists, execution starts at step 3 (default=False)')
     _args = parser.parse_args()
     run(_args)
