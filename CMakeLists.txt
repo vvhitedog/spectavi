@@ -35,9 +35,17 @@ set(HNSWLIB_INCLUDE_DIR ${HNSWLIB_ROOT} )
 set(SRCS src/Spectavi.cpp)
 set(SRCS ${SRCS} ${VLFEAT_SRCS} )
 
+# Use gperf profiler if specified
+option(GPERF_PROFILER_BUILD "Build with gperftools CPU profiling enabled." OFF )
+if (GPERF_PROFILER_BUILD) 
+  set(PROFILER_LINK_FLAG profiler)
+else ()
+  set(PROFILER_LINK_FLAG)
+endif (GPERF_PROFILER_BUILD)
+
 add_library(spectavi SHARED ${SRCS})
 target_include_directories(spectavi PRIVATE ${EIGEN3_INCLUDE_DIR}
   ${CNDARRAY_INCLUDE_DIR} ${VLFEAT_INCLUDE_DIR} ${HNSWLIB_INCLUDE_DIR})
-target_link_libraries(spectavi PUBLIC OpenMP::OpenMP_CXX)
+target_link_libraries(spectavi PUBLIC OpenMP::OpenMP_CXX ${PROFILER_LINK_FLAG} )
 
 

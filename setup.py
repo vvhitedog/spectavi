@@ -46,12 +46,13 @@ class CMakeBuild(build_ext):
         cmdline_args = self.distribution.script_args
         cmdline_args = [arg.strip('--') for arg in cmdline_args]
         do_debug = self.debug
+        do_profile = os.environ.get('GPERF_PROFILER_BUILD')
         #if 'pdb' in cmdline_args and ('test' in cmdline_args or 'nosetests' in cmdline_args):
         #    do_debug = True
         if 'debug' in cmdline_args:
             do_debug = True
 
-        cfg = 'Debug' if do_debug else 'Release'
+        cfg = 'Debug' if do_debug else ( 'RelWithDebInfo' if do_profile else 'Release')
         build_args = ['--config', cfg]
 
         if platform.system() == "Windows":
@@ -62,6 +63,9 @@ class CMakeBuild(build_ext):
         else:
             cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
             build_args += ['--', '-j2']
+            if do_profile:
+                cmake_args += ['-DGPERF_PROFILER_BUILD=ON']
+
 
         env = os.environ.copy()
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),
