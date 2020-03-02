@@ -140,11 +140,12 @@ def step3_estimate_essential_matrix(args, step2_out):
     x0 = np.dot(homogeneous(xd[..., :2]), iK.T)
     x1 = np.dot(homogeneous(yd[..., :2]), iK.T)
     with Timer('step3-computation'):
-        ransac_quality = {'low': 10000, 'medium': 25000,
-                          'high': 50000, 'ultra': 100000, 'uber': 500000}
-        ransac_options = {'required_percent_inliers': .7,
+        ransac_quality = {'low': .6, 'medium': .7,
+                          'high': .75, 'ultra': .8, 'uber': .9}
+        ransac_options = {'required_percent_inliers':
+                          ransac_quality[args.ransac_quality],
                           'reprojection_error_allowed': 4e-4,
-                          'maximum_tries': ransac_quality[args.ransac_quality],
+                          'maximum_tries': 1000000,
                           'find_best_even_in_failure': True,
                           'singular_value_ratio_allowed': 1e-2,
                           'progressbar': True}
