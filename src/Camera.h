@@ -344,7 +344,7 @@ public:
 		MatrixType sol;
 
 		double best_score = -1;
-		for (int itry = 0; itry < 10; ++itry) {
+		for (int itry = 0; itry < 0; ++itry) {
 			MatrixType ys(k, 2), xs(k, 1);
 			std::vector<int> indices = draw_random_indices<std::vector<int> >(0,
 					largest_rows, k);
@@ -389,7 +389,8 @@ public:
 
 		int min_left = 0, max_right = m_output_cols;
 		for (int irow = -extra_rows; irow < largest_rows + extra_rows; ++irow) {
-			int shift = sol(0) * irow + sol(1);
+			// int shift = sol(0) * irow + sol(1);
+			int shift = 0;
 			min_left = std::min(min_left, -shift);
 			max_right = std::max(max_right, m_output_cols - shift);
 		}
@@ -400,7 +401,8 @@ public:
             MatrixType copy1(m_output_rows, (m_output_cols) * m_nchannels);
             for (int irow = -extra_rows; irow < largest_rows + extra_rows; ++irow) {
                 int itarget_row = irow + zero_row; // shift indices to get to zero
-                int shift = sol(0) * irow + sol(1);
+                // int shift = sol(0) * irow + sol(1);
+                int shift = 0;
                 copy0.block(itarget_row, m_nchannels * (-min_left), 1,
                             m_rim0.cols()) = m_rim0.row(itarget_row);
                 copy1.block(itarget_row, m_nchannels * (-shift - min_left), 1,
@@ -418,7 +420,8 @@ public:
             copy1.array() = -1;
             for (int irow = -extra_rows; irow < largest_rows + extra_rows; ++irow) {
                 int itarget_row = irow + zero_row; // shift indices to get to zero
-                int shift = sol(0) * irow + sol(1);
+                // int shift = sol(0) * irow + sol(1);
+                int shift = 0;
                 copy0.block(itarget_row,  (-min_left), 1,
                             m_idx0.cols()) = m_idx0.row(itarget_row);
                 copy1.block(itarget_row,  (-shift - min_left), 1,
