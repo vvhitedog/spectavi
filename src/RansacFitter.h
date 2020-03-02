@@ -8,6 +8,7 @@
 #include "FundamentalMatrixFitter.h"
 
 #include <iostream>
+#include <unordered_set>
 
 namespace spectavi {
 
@@ -104,6 +105,21 @@ class RansacFitter {
             return ret;
         }
 
+        // taken from https://stackoverflow.com/a/58198037/177931
+        std::unordered_set<int> floyd_sample(int N, int k) const {
+          //   std::default_random_engine gen;
+          std::random_device rd;
+          std::mt19937 gen(rd());
+          // for the benchmark I used a faster hash table
+          std::unordered_set<int> elems; // preallocation is good
+          for (int r = N - k; r < N; ++r) {
+            int v = std::uniform_int_distribution<>(1, r)(gen);
+            if (!elems.insert(v).second)
+              elems.insert(r);
+          }
+          return elems;
+        }
+
     public:
 
         RansacFitter( const Scalar *x0,
@@ -152,7 +168,7 @@ class RansacFitter {
                     }
                 }
                 FundamentalMatrixFitter<MatrixType> fmat_fitter;
-                for ( int ix : draw_random_indices<std::vector<int> >(nex,7) ){
+                for ( int ix : floyd_sample(nex,7) ){
                     MatrixType row0 = m_x0.row(ix).hnormalized().eval();
                     MatrixType row1 = m_x1.row(ix).hnormalized().eval();
                     double x = row0(0);
