@@ -135,7 +135,7 @@ class RansacFitter {
                 m_best_fit_inlier_percent = 0;
             }
             int done = 0;
-            for ( int itry = 0; itry < m_maximum_tries; ++itry ) {
+            for ( int itry = 0; itry < m_maximum_tries && !m_success; ++itry ) {
                 if (progressbar) {
                     {
                         done += 1;
@@ -172,7 +172,7 @@ class RansacFitter {
                     double percent_inlier = (double)ninlier / (double)nex ;
                     if ((percent_inlier > m_required_percent_inliers || m_find_best_even_in_failure) &&
                             m_best_fit_inlier_percent < percent_inlier) {
-                        m_success = true;
+                        m_success = percent_inlier > m_required_percent_inliers;
                         m_best_fit_inlier_percent = percent_inlier;
                         m_best_fit_essential_matrix = F0;
                         m_best_fit_camera = cam;
@@ -185,7 +185,7 @@ class RansacFitter {
                     double percent_inlier = (double)ninlier / (double)nex ;
                     if ((percent_inlier > m_required_percent_inliers || m_find_best_even_in_failure) &&
                             m_best_fit_inlier_percent < percent_inlier) {
-                        m_success = true;
+                        m_success = percent_inlier > m_required_percent_inliers;
                         m_best_fit_inlier_percent = percent_inlier;
                         m_best_fit_essential_matrix = F1;
                         m_best_fit_camera = cam;
@@ -198,7 +198,7 @@ class RansacFitter {
                     double percent_inlier = (double)ninlier / (double)nex ;
                     if ((percent_inlier > m_required_percent_inliers || m_find_best_even_in_failure) &&
                             m_best_fit_inlier_percent < percent_inlier) {
-                        m_success = true;
+                        m_success = percent_inlier > m_required_percent_inliers;
                         m_best_fit_inlier_percent = percent_inlier;
                         m_best_fit_essential_matrix = F2;
                         m_best_fit_camera = cam;
