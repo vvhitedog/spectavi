@@ -1,16 +1,22 @@
 """This example composes several key steps into a pipeline that can estimate
 the Essential matrix between a pair of images, given an estimate of the
-intrinsics of the camera (that took those images.)
+intrinsics of the camera (that took those images.) The estimated essential
+matrix is used to triangulate a set of seed points (to create a sparse 3D
+point cloud,) and to derive a suitable pair of camera matrices (P0,P1) to
+perform a rectification step.
 
-There are three main steps:
+There are three main steps and 2 post-processing steps:
 1. compute key points for finding correspondences
 2. estimate tentative correspondences between image pair
 3. robustly estimate the essential matrix between image pair
+4. triangulate a set of sparse points deemed inliers to create a sparse 3D
+   point cloud
+5. use the essential matrix to derive camera matrices and use those to
+   rectify the image pair
 
-Each of these three main steps can be run, with this script stopping at any
-point and visualizing the results. This is meant to be an instructuve
-example.
+This scripts showcases the outputs of each of these distinct steps.
 """
+import os
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import collections as mc
@@ -134,9 +140,11 @@ def step3_estimate_essential_matrix(args, step2_out):
     x0 = np.dot(homogeneous(xd[..., :2]), iK.T)
     x1 = np.dot(homogeneous(yd[..., :2]), iK.T)
     with Timer('step3-computation'):
+        ransac_quality = {'low': 10000, 'medium': 25000,
+                          'high': 50000, 'ultra': 100000}
         ransac_options = {'required_percent_inliers': .7,
                           'reprojection_error_allowed': 4e-4,
-                          'maximum_tries': 50000,
+                          'maximum_tries': ransac_quality[args.ransac_quality],
                           'find_best_even_in_failure': True,
                           'singular_value_ratio_allowed': 1e-2,
                           'progressbar': True}
@@ -161,7 +169,7 @@ def step4_traingulate_points(args, step3_out):
     with Timer('step4-computation'):
         RX = dlt_triangulate(P0, P1, x0[idx], x1[idx])
     RX = RX[..., :] / RX[..., -1].reshape(-1, 1)
-    write_ply("ex.ply", RX)
+    write_ply(os.path.join(args.outdir, "sparse_inliers.ply"), RX)
     return RX, ransac
 
 
@@ -174,17 +182,24 @@ def step5_rectify_images(args, step4_out):
     P1 = np.dot(K, P1)
     P0 = np.dot(K, P0)
     im0, im1 = imread(args.images[0]), imread(args.images[1])
-    rsf = 1.
     with Timer('step5-computation'):
         r0, r1, ri0, ri1 = image_pair_rectification(
-            P0, P1, im0, im1, sampling_factor=rsf)
-    plt.imsave("im0-rect.png", r0)
-    plt.imsave("im1-rect.png", r1)
-    plt.imsave("im0-idx-rect.png", ri0)
-    plt.imsave("im1-idx-rect.png", ri1)
+            P0, P1, im0, im1, sampling_factor=args.rsf)
+    plt.imsave(os.path.join(args.outdir, "rect-" +
+                            os.path.basename(args.images[0])), r0)
+    plt.imsave(os.path.join(args.outdir, "rect-" +
+                            os.path.basename(args.images[1])), r1)
+    ri0.tofile(os.path.join(args.outdir, "rect-idx-" +
+                            os.path.basename(args.images[0])).split('.')[0]
+               + '.bin')
+    ri1.tofile(os.path.join(args.outdir, "rect-idx-" +
+                            os.path.basename(args.images[1])).split('.')[0]
+               + '.bin')
 
 
 def run(args):
+    if not os.path.exists(args.outdir):
+        os.mkdir(args.outdir)
     step1_out = step1_sift_detect(args)
     step2_out = step2_match_keypoints(args, step1_out)
     step3_out = step3_estimate_essential_matrix(args, step2_out)
@@ -194,22 +209,29 @@ def run(args):
 
 
 example_text = '''example:
-    python ex01_essential_estimation.py ../data/castle/01.jpg ../data/castle/02.jpg
+    python ex01_essential_estimation.py ../data/castle/01.jpg ../data/castle/02.jpg ../data/castle/K.txt
 '''
 
 if __name__ == '__main__':
     # parse arguments
     parser = argparse.ArgumentParser(description='Pipeline to estimate essential matrix'
-                                     ' between image pair',
+                                     ' between image pair; later perform'
+                                     ' triangulation & rectification',
                                      epilog=example_text,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('images', metavar='IM', type=str, nargs=2,
-                        help='images to compute SIFT')
+                        help='images to estimate essential matrix')
     parser.add_argument('K', metavar='K', type=str,
                         help='intrinsics for camera (assumption is one camera taking two images')
     parser.add_argument('--min_ratio', default=2., type=float, action='store',
                         help='min-ratio of second min distance to min distance that is accepted (default=2.)')
     parser.add_argument('--percent_to_show', default=.1, type=float, action='store',
                         help='percent of matches to show (for legibility) (default=.1)')
+    parser.add_argument('--ransac_quality', default='low', choices=['low', 'medium', 'high', 'ultra'], action='store',
+                        help='quality of ransac fit to perform (default=low)')
+    parser.add_argument('--outdir', default='ex01_out', type=str,
+                        help='output is placed in this directory (default="ex01_out")')
+    parser.add_argument('--rsf', default=1., type=float, action='store',
+                        help='resampling factor (along epipolar lines) when performing rectification (default=1.)')
     _args = parser.parse_args()
     run(_args)
