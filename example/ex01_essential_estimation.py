@@ -159,19 +159,25 @@ def step3_estimate_essential_matrix(args, step2_out):
     print (' Fundamental Matrix Singular Values: ', s)
     print (' Singular Values ratio score: ',
            np.abs(s[0] - s[1]) / np.abs(s[0] + s[1]))
-    return ransac, x0, x1
+    return ransac, x0, x1, xd, yd
 
 
 def step4_traingulate_points(args, step3_out):
     """Triangulate the points detected as inliers from the previous step."""
-    ransac, x0, x1 = step3_out
+    ransac, x0, x1, xd, yd = step3_out
     idx = ransac['inlier_idx']
     P1 = ransac['camera']
     P0 = np.hstack((np.eye(3), np.zeros((3, 1))))
     with Timer('step4-computation'):
         RX = dlt_triangulate(P0, P1, x0[idx], x1[idx])
     RX = RX[..., :] / RX[..., -1].reshape(-1, 1)
-    write_ply(os.path.join(args.outdir, "sparse_inliers.ply"), RX)
+    xy0 = xd[idx, :2].astype('int32')
+    xy1 = yd[idx, :2].astype('int32')
+    im0, im1 = imread(args.images[0]), imread(args.images[1])
+    im0v = im0[xy0[:, 1], xy0[:, 0]]
+    im1v = im1[xy1[:, 1], xy1[:, 0]]
+    rgb = np.round(255*(im0v + im1v)/2.).astype('uint8')
+    write_ply(os.path.join(args.outdir, "sparse_inliers.ply"), RX, rgb=rgb)
     return RX, ransac
 
 
