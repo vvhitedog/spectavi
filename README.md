@@ -55,14 +55,14 @@ project, which is a simple implementation of interfacing numpy data with C++
 ### Multi View Geometry
 - [x] Two-view geometry Essential Matrix estimation: implementation
 - [x] Two-view geometry Essential Matrix estimation: testing
-- [ ] Two-view geometry Essential Matrix estimation: example (real-data)
+- [x] Two-view geometry Essential Matrix estimation: example (real-data)
 - [x] Two-view geometry point triangulation (DLT Direct Linear Transform): implementation
 - [x] Two-view geometry point triangulation (DLT Direct Linear Transform): testing
-- [ ] Two-view geometry point triangulation (DLT Direct Linear Transform): example (real-data)
+- [x] Two-view geometry point triangulation (DLT Direct Linear Transform): example (real-data)
 - [x] Seven point algorithm (Estimating Essential Matrix): implementation
 - [x] Seven point algorithm (Estimating Essential Matrix): testing
 - [x] Two-view geometry image rectification given an Essential Matrix: implementation
-- [ ] Two-view geometry image rectification given an Essential Matrix: example
+- [x] Two-view geometry image rectification given an Essential Matrix: example
 
 ### Feature
 - [x] SIFT feature detection and descriptor (vlfeat): implementation
