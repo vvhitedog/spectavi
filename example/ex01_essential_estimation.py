@@ -16,7 +16,7 @@ from matplotlib import pyplot as plt
 from matplotlib import collections as mc
 from util import imread, Timer
 from spectavi.feature import sift_filter, nn_bruteforcel1k2
-from spectavi.mvg import ransac_fitter, dlt_triangulate
+from spectavi.mvg import ransac_fitter, dlt_triangulate, image_pair_rectification
 import argparse
 import multiprocessing
 
@@ -133,13 +133,14 @@ def step3_estimate_essential_matrix(args, step2_out):
     iK = np.linalg.inv(K)
     x0 = np.dot(homogeneous(xd[..., :2]), iK.T)
     x1 = np.dot(homogeneous(yd[..., :2]), iK.T)
-    ransac_options = {'required_percent_inliers': .7,
-                      'reprojection_error_allowed': 4e-4,
-                      'maximum_tries': 10000,
-                      'find_best_even_in_failure': True,
-                      'singular_value_ratio_allowed': 1e-2,
-                      'progressbar': True}
-    ransac = ransac_fitter(x0, x1, options=ransac_options)
+    with Timer('step3-computation'):
+        ransac_options = {'required_percent_inliers': .7,
+                          'reprojection_error_allowed': 4e-4,
+                          'maximum_tries': 50000,
+                          'find_best_even_in_failure': True,
+                          'singular_value_ratio_allowed': 1e-2,
+                          'progressbar': True}
+        ransac = ransac_fitter(x0, x1, options=ransac_options)
     # assert ransac['success']
     rE = ransac['essential']
     print (' Percent of inliers: ', ransac['inlier_percent'])
@@ -152,21 +153,43 @@ def step3_estimate_essential_matrix(args, step2_out):
 
 
 def step4_traingulate_points(args, step3_out):
-    """Triangulate the points output as inliers from the previous step."""
+    """Triangulate the points detected as inliers from the previous step."""
     ransac, x0, x1 = step3_out
     idx = ransac['inlier_idx']
     P1 = ransac['camera']
     P0 = np.hstack((np.eye(3), np.zeros((3, 1))))
-    RX = dlt_triangulate(P0, P1, x0[idx], x1[idx])
+    with Timer('step4-computation'):
+        RX = dlt_triangulate(P0, P1, x0[idx], x1[idx])
     RX = RX[..., :] / RX[..., -1].reshape(-1, 1)
     write_ply("ex.ply", RX)
+    return RX, ransac
+
+
+def step5_rectify_images(args, step4_out):
+    """Rectify images based on RANSAC fit of essential matrix."""
+    _, ransac = step4_out
+    P1 = ransac['camera']
+    P0 = np.hstack((np.eye(3), np.zeros((3, 1))))
+    K = np.loadtxt(fname=args.K)
+    P1 = np.dot(K, P1)
+    P0 = np.dot(K, P0)
+    im0, im1 = imread(args.images[0]), imread(args.images[1])
+    rsf = 1.
+    with Timer('step5-computation'):
+        r0, r1, ri0, ri1 = image_pair_rectification(
+            P0, P1, im0, im1, sampling_factor=rsf)
+    plt.imsave("im0-rect.png", r0)
+    plt.imsave("im1-rect.png", r1)
+    plt.imsave("im0-idx-rect.png", ri0)
+    plt.imsave("im1-idx-rect.png", ri1)
 
 
 def run(args):
     step1_out = step1_sift_detect(args)
     step2_out = step2_match_keypoints(args, step1_out)
     step3_out = step3_estimate_essential_matrix(args, step2_out)
-    step4_traingulate_points(args, step3_out)
+    step4_out = step4_traingulate_points(args, step3_out)
+    step5_rectify_images(args, step4_out)
     plt.show(block=True)
 
 
