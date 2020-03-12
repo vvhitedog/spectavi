@@ -12,7 +12,7 @@ class DltTriangulator {
 private:
 
 	typedef typename MatrixType::Scalar Scalar;
-	typedef Eigen::Map<MatrixType> MatrixTypeMap;
+    typedef Eigen::Map< const MatrixType> MatrixTypeMap;
 
 	MatrixTypeMap m_P0;
 	MatrixTypeMap m_P1;
@@ -30,8 +30,8 @@ private:
 public:
 
 	DltTriangulator(const Scalar *P0, const Scalar *P1) :
-			m_P0(const_cast<Scalar*>(P0), 3, 4),
-			m_P1(const_cast<Scalar*>(P1), 3, 4) {
+            m_P0(P0, 3, 4),
+            m_P1(P1, 3, 4) {
 		m_sign_det_M0 = m_P0.block(0, 0, 3, 3).determinant() < 0 ? -1. : 1.;
 		m_sign_det_M1 = m_P1.block(0, 0, 3, 3).determinant() < 0 ? -1. : 1.;
         m_norm_m0 = m_P0.block(0, 2, 3, 1).array().square().sum();
@@ -40,11 +40,11 @@ public:
 
 	DltTriangulator& solve(const Scalar *_x0, const Scalar *_x1, int len) {
 		MatrixType A(4, 4);
-		m_x0 = MatrixTypeMap(const_cast<Scalar*>(_x0), len, 1);
+        m_x0 = MatrixTypeMap(_x0, len, 1);
 		if (len == 3) {
 			m_x0 = m_x0.colwise().hnormalized().eval();
 		}
-		m_x1 = MatrixTypeMap(const_cast<Scalar*>(_x1), len, 1);
+        m_x1 = MatrixTypeMap(_x1, len, 1);
 		if (len == 3) {
 			m_x1 = m_x1.colwise().hnormalized().eval();
 		}

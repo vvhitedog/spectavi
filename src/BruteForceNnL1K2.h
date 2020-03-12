@@ -34,7 +34,7 @@ public:
   typedef MatrixType::Scalar Scalar;
   typedef MatrixTypeBig::Scalar ScalarBig;
   typedef typename MatrixTypeLabel::Scalar Label;
-  typedef Eigen::Map<MatrixType> MatrixTypeMap;
+  typedef Eigen::Map<const MatrixType> MatrixTypeMap;
 
 private:
   MatrixTypeMap m_x;
@@ -42,10 +42,11 @@ private:
   const int m_K;
 
 public:
-  BruteForceNnL1K2(const Eigen::Ref<const MatrixType> &x,
-                   const Eigen::Ref<const MatrixType> &y)
-      : m_x(const_cast<Scalar *>(x.data()), x.rows(), x.cols()),
-        m_y(const_cast<Scalar *>(y.data()), y.rows(), y.cols()), m_K(2) {
+  BruteForceNnL1K2(const Scalar *x,
+                   const Scalar *y, int xrows,
+                   int yrows, int dim)
+      : m_x(x,xrows,dim),
+        m_y(y,yrows,dim), m_K(2) {
     if (m_x.cols() != m_y.cols()) {
       throw std::runtime_error("Matrix inner dimensions must match.");
     }

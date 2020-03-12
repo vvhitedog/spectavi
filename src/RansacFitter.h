@@ -18,12 +18,12 @@ template<typename MatrixType = RowMatrixXd, typename MatrixTypeI = RowMatrixXi>
 class RansacFitter {
 
 	typedef typename MatrixType::Scalar Scalar;
-	typedef Eigen::Map<MatrixType> MatrixTypeMap;
+    typedef Eigen::Map< const MatrixType> MatrixTypeMapConst;
 
     private:
         typedef Camera<MatrixType> Camera_t;
-        MatrixTypeMap  m_x0;
-        MatrixTypeMap  m_x1;
+        MatrixTypeMapConst  m_x0;
+        MatrixTypeMapConst  m_x1;
         double m_required_percent_inliers;
         double m_reprojection_error_allowed;
         int m_maximum_tries;
@@ -128,8 +128,8 @@ class RansacFitter {
                 double required_percent_inliers,
                 double reprojection_error_allowed,
                 int maximum_tries,
-                bool find_best_even_in_failure ): m_x0(const_cast<Scalar*>(x0),npt,3),
-            m_x1(const_cast<Scalar*>(x1),npt,3), m_required_percent_inliers( required_percent_inliers),
+                bool find_best_even_in_failure ): m_x0(x0,npt,3),
+            m_x1(x1,npt,3), m_required_percent_inliers( required_percent_inliers),
             m_reprojection_error_allowed(reprojection_error_allowed),
             m_maximum_tries(maximum_tries), m_success(false),
             m_best_fit_inlier_percent(0.),

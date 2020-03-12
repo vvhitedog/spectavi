@@ -71,11 +71,11 @@ template<typename MatrixType = RowMatrixXd, typename MatrixTypeI = RowMatrixXi>
 class Rectifier {
 
 	typedef typename MatrixType::Scalar Scalar;
-	typedef Eigen::Map<MatrixType> MatrixTypeMap;
+    typedef Eigen::Map<const MatrixType> MatrixTypeMap;
 
 private:
 
-	MatrixType m_P0, m_P1;
+    MatrixTypeMap m_P0, m_P1;
 	MatrixTypeMap m_im0;
 	MatrixTypeMap m_im1;
 
@@ -261,14 +261,16 @@ private:
 
 public:
 
-	Rectifier(const Eigen::Ref<const MatrixType> &P0,
-			const Eigen::Ref<const MatrixType> &P1,
-			const Eigen::Ref<const MatrixType> &im0,
-			const Eigen::Ref<const MatrixType> &im1, int nchannels) :
-			m_P0(P0), m_P1(P1), m_im0(const_cast<Scalar*>(im0.data()),
-					im0.rows(), im0.cols()*nchannels), m_im1(
-					const_cast<Scalar*>(im1.data()), im1.rows(), im1.cols()*nchannels), m_nchannels(
-					nchannels), m_output_rows(0), m_output_cols(0) {
+    Rectifier(const Scalar *P0,
+            const Scalar *P1,
+            const Scalar *im0,
+            const Scalar *im1, int rows0, int cols0,
+            int rows1, int cols1, int nchannels) :
+            m_P0(P0,3,4), m_P1(P1,3,4),
+            m_im0(im0,rows0,cols0*nchannels),
+            m_im1(im1,rows1,cols1*nchannels),
+            m_nchannels(nchannels),
+            m_output_rows(0), m_output_cols(0) {
 	}
 
 	Rectifier& resample(double sampling_factor) {

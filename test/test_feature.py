@@ -41,7 +41,7 @@ class FeatureTests(TestCase):
         precomputed_sf = np.loadtxt(datapath)
         # Compute SIFT features using spectavi
         impath = os.path.join(oneup, 'data', 'sift-test', 'sur-ogre.npz')
-        im = np.load(impath)['im']
+        im = np.load(impath)['im'].astype('float32')
         sf = feature.sift_filter(im)
         # Do the comparison
         self.assertTrue(np.allclose(sf, precomputed_sf))

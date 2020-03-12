@@ -38,8 +38,9 @@ void seven_point_algorithm(const double *x, const double *xp, int *nroot,
 void dlt_triangulate(const double *P0, const double *P1, int npt,
                      const double *x, const double *xp, double *dst) {
 
-  RowMatrixXdMap _x(const_cast<double *>(x), npt, 3);
-  RowMatrixXdMap _xp(const_cast<double *>(xp), npt, 3);
+  using RowMatrixXdMapConst = Eigen::Map<const RowMatrixXd>;
+  RowMatrixXdMapConst _x(x, npt, 3);
+  RowMatrixXdMapConst _xp(xp, npt, 3);
 
   RowMatrixXdMap _dst(dst, npt, 4);
 
@@ -53,8 +54,9 @@ void dlt_triangulate(const double *P0, const double *P1, int npt,
 void dlt_reprojection_error(const double *P0, const double *P1, int npt,
                             const double *x, const double *xp, double *dst) {
 
-  RowMatrixXdMap _x(const_cast<double *>(x), npt, 3);
-  RowMatrixXdMap _xp(const_cast<double *>(xp), npt, 3);
+  using RowMatrixXdMapConst = Eigen::Map<const RowMatrixXd>;
+  RowMatrixXdMapConst _x(x, npt, 3);
+  RowMatrixXdMapConst _xp(xp, npt, 3);
 
   RowMatrixXdMap _dst(dst, npt, 1);
 
@@ -90,11 +92,7 @@ void image_pair_rectification(const double *P0, const double *P1,
                               NdArray *rectified0, NdArray *rectified1,
                               NdArray *rectified_idx0,
                               NdArray *rectified_idx1) {
-  RowMatrixXdMap _P0(const_cast<double *>(P0), 3, 4);
-  RowMatrixXdMap _P1(const_cast<double *>(P1), 3, 4);
-  RowMatrixXdMap _im0(const_cast<double *>(im0), hgt, wid);
-  RowMatrixXdMap _im1(const_cast<double *>(im1), hgt, wid);
-  Rectifier<> rectifier(_P0, _P1, _im0, _im1, nchan);
+  Rectifier<> rectifier(P0, P1, im0, im1, hgt, wid, hgt, wid, nchan);
   rectifier.resample(sampling_factor);
   if (nchan == 1) {
     ndarray_copy_matrix(rectifier.rectified0(), rectified0);
@@ -129,11 +127,8 @@ void image_pair_rectification(const double *P0, const double *P1,
  * @param hgt Height of the image
  * @param out Buffer that output will be written to (float NdArray)
  */
-void sift_filter(const double *im, int wid, int hgt, NdArray *out) {
-  RowMatrixXdMap _im(const_cast<double *>(im), hgt, wid);
-  // copy image data into a buffer for sift
-  RowMatrixXf fim = _im.cast<float>();
-  SiftFilter filt(fim);
+void sift_filter(const float *im, int wid, int hgt, NdArray *out) {
+  SiftFilter filt(im, hgt, wid);
   filt.filter();
   size_t nkp = filt.get_nkeypoints();
   ndarray_set_size(out, nkp, SIFT_KP_SIZE);
@@ -156,8 +151,9 @@ void sift_filter(const double *im, int wid, int hgt, NdArray *out) {
  */
 void ann_hnswlib(const float *x, const float *y, int xrows, int yrows, int dim,
                  int k, NdArray *out) {
-  RowMatrixXfMap _x(const_cast<float *>(x), xrows, dim);
-  RowMatrixXfMap _y(const_cast<float *>(y), yrows, dim);
+  using RowMatrixXfMap = Eigen::Map<const RowMatrixXf>;
+  RowMatrixXfMap _x(x, xrows, dim);
+  RowMatrixXfMap _y(y, yrows, dim);
   ndarray_set_size(out, yrows, k);
   ndarray_alloc(out);
   RowMatrixXsMap _out(reinterpret_cast<size_t *>(out->m_data), yrows, k);
@@ -184,62 +180,53 @@ void ann_hnswlib(const float *x, const float *y, int xrows, int yrows, int dim,
 void nn_bruteforce(const float *x, const float *y, int xrows, int yrows,
                    int dim, int k, float p, float mu, NdArray *outidx,
                    NdArray *outdist) {
-  RowMatrixXfMap _x(const_cast<float *>(x), xrows, dim);
-  RowMatrixXfMap _y(const_cast<float *>(y), yrows, dim);
   ndarray_set_size(outidx, yrows, k);
   ndarray_alloc(outidx);
   ndarray_set_size(outdist, yrows, k);
   ndarray_alloc(outdist);
   RowMatrixXsMap _outidx(reinterpret_cast<size_t *>(outidx->m_data), yrows, k);
   RowMatrixXfMap _outdist(reinterpret_cast<float *>(outdist->m_data), yrows, k);
-  BruteForceNn<> nn(_x, _y, p, mu);
+  BruteForceNn<> nn(x, y, xrows, yrows, dim, p, mu);
   nn.find_neighbours(_outidx, _outdist, k);
 }
 
 void nn_bruteforcei(const int *x, const int *y, int xrows, int yrows, int dim,
                     int k, float p, float mu, NdArray *outidx,
                     NdArray *outdist) {
-  RowMatrixXiMap _x(const_cast<int *>(x), xrows, dim);
-  RowMatrixXiMap _y(const_cast<int *>(y), yrows, dim);
   ndarray_set_size(outidx, yrows, k);
   ndarray_alloc(outidx);
   ndarray_set_size(outdist, yrows, k);
   ndarray_alloc(outdist);
   RowMatrixXsMap _outidx(reinterpret_cast<size_t *>(outidx->m_data), yrows, k);
   RowMatrixXiMap _outdist(reinterpret_cast<int *>(outdist->m_data), yrows, k);
-  BruteForceNn<RowMatrixXi> nn(_x, _y, p, mu);
+  BruteForceNn<RowMatrixXi> nn(x, y, xrows, yrows, dim, p, mu);
   nn.find_neighbours(_outidx, _outdist, k);
 }
 
 void nn_bruteforcel1k2(const uint8_t *x, const uint8_t *y, int xrows, int yrows,
                        int dim, int nthreads, NdArray *outidx, NdArray *outdist) {
   const int K = 2;
-  RowMatrixXu8Map _x(const_cast<uint8_t *>(x), xrows, dim);
-  RowMatrixXu8Map _y(const_cast<uint8_t *>(y), yrows, dim);
   ndarray_set_size(outidx, yrows, K);
   ndarray_alloc(outidx);
   ndarray_set_size(outdist, yrows, K);
   ndarray_alloc(outdist);
   RowMatrixXsMap _outidx(reinterpret_cast<size_t *>(outidx->m_data), yrows, K);
   RowMatrixXiMap _outdist(reinterpret_cast<int *>(outdist->m_data), yrows, K);
-  BruteForceNnL1K2<> nn(_x, _y);
+  BruteForceNnL1K2<> nn(x,y,xrows,yrows,dim);
   nn.find_neighbours(_outidx, _outdist, nthreads);
 }
 
 void kmedians(const float *x, int xrows, int dim, int k) {
-  RowMatrixXfMap _x(const_cast<float *>(x), xrows, dim);
-  KMedians<> kmed(_x, k);
+  KMedians<> kmed(x, xrows, dim, k);
   kmed.run();
 }
 
 void nn_kmedians(const float *x, const float *y, int xrows, int yrows, int dim,
                  int nmx, int nmy, int c, int k, NdArray *outidx,
                  NdArray *outdist) {
-  RowMatrixXfMap _x(const_cast<float *>(x), xrows, dim);
-  KMedians<> kmedx(_x, nmx);
+  KMedians<> kmedx(x, xrows, dim, nmx);
   kmedx.run();
-  RowMatrixXfMap _y(const_cast<float *>(y), yrows, dim);
-  KMedians<> kmedy(_y, nmy);
+  KMedians<> kmedy(y, xrows, dim, nmy);
   kmedy.run();
   ndarray_set_size(outidx, yrows, k);
   ndarray_alloc(outidx);

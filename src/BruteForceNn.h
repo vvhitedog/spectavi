@@ -15,7 +15,7 @@ template <typename MatrixType = RowMatrixXf,
 class BruteForceNn {
   typedef typename MatrixType::Scalar Scalar;
   typedef typename MatrixTypeLabel::Scalar Label;
-  typedef Eigen::Map<MatrixType> MatrixTypeMap;
+  typedef Eigen::Map<const MatrixType> MatrixTypeMap;
 
 private:
   MatrixTypeMap m_x;
@@ -24,11 +24,11 @@ private:
   const Scalar m_mu;
 
 public:
-  BruteForceNn(const Eigen::Ref<const MatrixType> &x,
-               const Eigen::Ref<const MatrixType> &y, double p = .5,
+  BruteForceNn(const Scalar *x,
+               const Scalar *y, int xrows, int yrows, int dim, double p = .5,
                Scalar mu = 0.)
-      : m_x(const_cast<Scalar *>(x.data()), x.rows(), x.cols()),
-        m_y(const_cast<Scalar *>(y.data()), y.rows(), y.cols()), m_p(p),
+      : m_x(x, xrows, dim),
+        m_y(y, yrows, dim), m_p(p),
         m_mu(mu) {}
 
   void find_neighbours(Eigen::Ref<MatrixTypeLabel> out_idx,

@@ -20,7 +20,7 @@ sift_filter
 
 _sift_filter = clib.sift_filter
 _sift_filter.restype = None
-_sift_filter.argtypes = [ndpointer(ct.c_double, flags="C_CONTIGUOUS"),
+_sift_filter.argtypes = [ndpointer(ct.c_float, flags="C_CONTIGUOUS"),
                          ct.c_int,
                          ct.c_int,
                          ct.POINTER(NdArray), ]
@@ -32,7 +32,7 @@ def sift_filter(im):
 
     Parameters
     ----------
-    im : ndarray
+    im : float32 ndarray
         A (single channel/grayscale) image (2d).
 
     Returns

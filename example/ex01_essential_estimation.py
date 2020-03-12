@@ -71,7 +71,8 @@ def normalize_to_ubyte(x):
 
 def step1_sift_detect(args):
     """Run SIFT key-point detection and descriptors on images."""
-    ims = [imread(image_filename, force_grayscale=True)
+    ims = [imread(image_filename, dtype='float32',
+            force_grayscale=True)
            for image_filename in args.images]
     with Timer('step1-computation'):
         siftkps = [sift_filter(im) for im in ims]

@@ -16,7 +16,7 @@ class SiftFilter {
 
   typedef RowMatrixXf MatrixType;
   typedef typename MatrixType::Scalar Scalar;
-  typedef Eigen::Map<MatrixType> MatrixTypeMap;
+  typedef Eigen::Map<const MatrixType> MatrixTypeMap;
 
 public:
   class sift_data {
@@ -44,8 +44,8 @@ private:
   std::list<sift_data> m_sift_kps; // keypoint-descriptors
 
 public:
-  SiftFilter(const Eigen::Ref<const MatrixType> &im)
-      : m_im(const_cast<Scalar *>(im.data()), im.rows(), im.cols()) {}
+  SiftFilter(const Scalar *im, int rows, int cols)
+      : m_im(im, rows, cols) {}
 
   void filter() {
 
@@ -56,7 +56,7 @@ public:
     VlSiftFilt *filt = nullptr;
     auto wid = m_im.cols();
     auto hgt = m_im.rows();
-    float *fdata = m_im.data();
+    const float *fdata = m_im.data();
 
     // make filter
     filt = vl_sift_new(wid, hgt, m_O, m_S, m_omin);
