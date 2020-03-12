@@ -4,6 +4,7 @@
 #include "EigenDefinitions.h"
 #include <queue>
 #include <vector>
+#include <unordered_set>
 
 /* brute-force computation of nearest neighbours under a p-norm */
 
