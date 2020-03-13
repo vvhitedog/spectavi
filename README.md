@@ -89,8 +89,10 @@ The only core python dependecies are numpy and cndarray. Installation of numpy
 is fairly standard and is not described here (since there are many ways to do
 it, each with their own pros and cons.) 
 
-For running examples, other python dependencies are: matplotlib, scipy,
-skimage. These may be skipped to just build and run tests.
+For running examples, the python dependencies are
+- matplotlib: reading/writing/plotting images and visualization matches/data 
+- open3d: (optional for examples) visualizing 3D sparse point cloud in python
+These may be skipped to just build and run tests. 
 
 There is a dependency of the C++ code on the
 [Eigen3](http://eigen.tuxfamily.org/index.php?title=Main_Page) library, which

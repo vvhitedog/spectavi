@@ -206,6 +206,20 @@ def step5_rectify_images(args, step4_out):
                + '.bin')
 
 
+def try_open3d_viz(args):
+    """Try to visualize sparse 3d point cloud using open3d"""
+    try: 
+        from open3d import visualization as viz
+        from open3d import io
+        ply_file = os.path.join(args.outdir, "sparse_inliers.ply")
+        pc = io.read_point_cloud(ply_file)
+        viz.draw_geometries([pc])
+    except ImportError as err:
+        print ("Failed to import `open3d` package, can not visualize"
+                " point-cloud, try installing open3d or use meshlab to visualize"
+                " ply file.")
+
+
 def load_cache(args):
     """Loads a cache if it exists."""
     filename = os.path.join(args.outdir, 'cache.npz')
@@ -241,6 +255,7 @@ def run(args):
     step4_out = step4_traingulate_points(args, step3_out)
     step5_rectify_images(args, step4_out)
     plt.show(block=True)
+    try_open3d_viz(args)
 
 
 example_text = '''example:
@@ -262,8 +277,8 @@ if __name__ == '__main__':
                         help='min-ratio of second min distance to min distance that is accepted (default=2.)')
     parser.add_argument('--percent_to_show', default=.1, type=float, action='store',
                         help='percent of matches to show (for legibility) (default=.1)')
-    parser.add_argument('--ransac_quality', default='low', choices=['low', 'medium', 'high', 'ultra', 'uber'], action='store',
-                        help='quality of ransac fit to perform (default=low)')
+    parser.add_argument('--ransac_quality', default='ultra', choices=['low', 'medium', 'high', 'ultra', 'uber'], action='store',
+                        help='quality of ransac fit to perform (default=ultra)')
     parser.add_argument('--outdir', default='ex01_out', type=str,
                         help='output is placed in this directory (default="ex01_out")')
     parser.add_argument('--rsf', default=1., type=float, action='store',
