@@ -21,7 +21,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import collections as mc
 from util import imread, Timer
-from spectavi.feature import sift_filter, nn_bruteforcel1k2
+from spectavi.feature import sift_filter, nn_bruteforcel1k2, nn_cascading_hash
 from spectavi.mvg import ransac_fitter, dlt_triangulate, image_pair_rectification
 import argparse
 import multiprocessing
@@ -55,18 +55,26 @@ def homogeneous(x):
     return np.hstack((x, np.ones((x.shape[0], 1))))
 
 
-def normalize_to_ubyte(x):
+def normalize_to_ubyte(_x):
     """Simple range normalization to an unsigned byte."""
+    x = _x.copy()
+    x = x - np.mean(x,axis=0,keepdims=True)
+    x = x / np.std(x,axis=0,keepdims=True)
+    drange = np.max(x,axis=0,keepdims=True) - np.min(x,axis=0,keepdims=True)
+    x0 = ((x- np.min(x,axis=0,keepdims=True)) / drange * 128 )
+    x0 = x0 - np.mean(x0,axis=0,keepdims=True)
+    x = np.round(x0)
     xrows, dim = x.shape
     new_dim = int(np.ceil(dim / 16.) * 16)
     xx = np.zeros([xrows, new_dim])
     xx[:, :dim] = x
     x = xx
-    col_mins = np.min(x, axis=0)
-    col_maxs = np.max(x, axis=0)
-    col_range = col_maxs - col_mins
-    col_range[col_range == 0] = 1  # avoid division by zero
-    return (255. * (x - col_mins.reshape(1, -1)) / col_range.reshape(1, -1)).astype('uint8')
+    return x
+    #col_mins = np.min(x, axis=0)
+    #col_maxs = np.max(x, axis=0)
+    #col_range = col_maxs - col_mins
+    #col_range[col_range == 0] = 1  # avoid division by zero
+    #return (255. * (x - col_mins.reshape(1, -1)) / col_range.reshape(1, -1)).astype('uint8')
 
 
 def step1_sift_detect(args):
@@ -96,10 +104,13 @@ def step2_match_keypoints(args, step1_out):
     """Using output of step1, find likely matches."""
     x, y = step1_out
     with Timer('step2-computation'):
-        _x = normalize_to_ubyte(x)
-        _y = normalize_to_ubyte(y)
-        nn_idx, nn_dist = nn_bruteforcel1k2(
-            _x, _y, nthreads=multiprocessing.cpu_count())
+        #_x = normalize_to_ubyte(x)
+        #_y = normalize_to_ubyte(y)
+        #nn_idx, nn_dist = nn_bruteforcel1k2(
+        #    _x, _y, nthreads=multiprocessing.cpu_count())
+        _x = normalize_to_ubyte(x).astype('float32')
+        _y = normalize_to_ubyte(y).astype('float32')
+        nn_idx, nn_dist = nn_cascading_hash(_x, _y)
     ratio = nn_dist[:, 1] / nn_dist[:, 0].astype('float64')
     pass_idx = ratio >= args.min_ratio
     idx0, _ = nn_idx.T

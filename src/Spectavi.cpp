@@ -204,7 +204,8 @@ void nn_bruteforcei(const int *x, const int *y, int xrows, int yrows, int dim,
 }
 
 void nn_bruteforcel1k2(const uint8_t *x, const uint8_t *y, int xrows, int yrows,
-                       int dim, int nthreads, NdArray *outidx, NdArray *outdist) {
+                       int dim, int nthreads, NdArray *outidx,
+                       NdArray *outdist) {
   const int K = 2;
   ndarray_set_size(outidx, yrows, K);
   ndarray_alloc(outidx);
@@ -212,8 +213,10 @@ void nn_bruteforcel1k2(const uint8_t *x, const uint8_t *y, int xrows, int yrows,
   ndarray_alloc(outdist);
   RowMatrixXsMap _outidx(reinterpret_cast<size_t *>(outidx->m_data), yrows, K);
   RowMatrixXiMap _outdist(reinterpret_cast<int *>(outdist->m_data), yrows, K);
-  BruteForceNnL1K2<> nn(x,y,xrows,yrows,dim);
-  nn.find_neighbours(_outidx, _outdist, nthreads);
+  BruteForceNnL1K2<> nn(x, y, xrows, yrows, dim);
+  auto filter = filter::IdentityFilter(xrows);
+  nn.find_neighbours<filter::IdentityFilter>(_outidx, _outdist,
+                                             filter, nthreads);
 }
 
 void kmedians(const float *x, int xrows, int dim, int k) {
@@ -236,6 +239,19 @@ void nn_kmedians(const float *x, const float *y, int xrows, int yrows, int dim,
   RowMatrixXfMap _outdist(reinterpret_cast<float *>(outdist->m_data), yrows, k);
   kmedy.find_nearest_neighbours(kmedx, _outidx, _outdist, c, k);
 }
+
+void nn_cascading_hash(const float *x, const float *y, int xrows, int yrows,
+                       int dim, int k, NdArray *outidx, NdArray *outdist) {
+  CascadingHashNn<> nn(x, y, xrows, yrows, dim);
+  ndarray_set_size(outidx, yrows, k);
+  ndarray_alloc(outidx);
+  ndarray_set_size(outdist, yrows, k);
+  ndarray_alloc(outdist);
+  RowMatrixXsMap _outidx(reinterpret_cast<size_t *>(outidx->m_data), yrows, k);
+  RowMatrixXfMap _outdist(reinterpret_cast<float *>(outdist->m_data), yrows, k);
+  nn.find_neighbours(_outidx,_outdist);
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 }

@@ -11,5 +11,6 @@
 #include "BruteForceNn.h"
 #include "KMedians.h"
 #include "BruteForceNnL1K2.h"
+#include "CascadingHashNn.h"
 
 #endif // SPECTAVI_DEFINITIONS_H

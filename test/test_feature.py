@@ -119,3 +119,42 @@ class FeatureTests(TestCase):
         max_diff_count = np.sum(
             np.abs(gt_nnd - nnd) > 0)
         self.assertLessEqual(max_diff_count, 0)
+
+    def nn_cascading_hash_test(self):
+        """
+        Smoke test for cascading hash
+        """
+        xrows = 10000
+        dim = 144
+        yrows = 1000
+        k = 2
+        #x = np.random.randn(xrows, dim).astype('float32')
+        oneup = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+        datapath = os.path.join(oneup, 'data', 'sift-test', 'sur-ogre.sift')
+        precomputed_sf = np.loadtxt(datapath)
+        x = precomputed_sf.astype('float32')
+        xrows = x.shape[0]
+        x = x - np.mean(x,axis=0,keepdims=True)
+        x = x / np.std(x,axis=0,keepdims=True)
+        drange = np.max(x,axis=0,keepdims=True) - np.min(x,axis=0,keepdims=True)
+        #x = np.round((x - np.min(x,axis=0,keepdims=True)) / drange)
+        x0 = np.round((x- np.min(x,axis=0,keepdims=True)) / drange * 128 )
+        x0 = x0 - np.mean(x0,axis=0,keepdims=True)
+        x1 = np.round((x) / drange * 127 )
+        #x0 = x0 - 128
+        x = x0
+        print np.max(x0,axis=0), np.min(x0,axis=0)
+        print np.max(x1,axis=0), np.min(x1,axis=0)
+        _x = np.zeros([xrows,dim],dtype='float32')
+        #_x = np.random.uniform(size=[xrows, dim]).astype('float32')
+        _x[:,:x.shape[1]] = x
+
+        #_x -= .5
+        #_x *= 255
+        #_x -= 128
+        x = _x
+        #y = np.random.randn(yrows, dim).astype('float32')
+        y = _x
+        nni, nnd = feature.nn_cascading_hash(x, y, k=k)
+        print nni
+        print nnd

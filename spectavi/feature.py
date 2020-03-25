@@ -237,4 +237,31 @@ def nn_kmedians(x, y, k, c=5):
 
 """
 ==================================================================================
+cascading_hash
+==================================================================================
+"""
+
+_nn_cascading_hash = clib.nn_cascading_hash
+_nn_cascading_hash.restype = None
+_nn_cascading_hash.argtypes = [ndpointer(ct.c_float, flags="C_CONTIGUOUS"),
+                               ndpointer(ct.c_float, flags="C_CONTIGUOUS"),
+                               ct.c_int,
+                               ct.c_int,
+                               ct.c_int,
+                               ct.c_int,
+                               ct.POINTER(NdArray),
+                               ct.POINTER(NdArray), ]
+
+def nn_cascading_hash(x, y, k=2):
+    xrows, xdim = x.shape
+    yrows, ydim = y.shape
+    assert ydim == xdim
+    dim = xdim
+    cashash_idx = NdArray(dtype='uint64')
+    cashash_dist = NdArray(dtype='float32')
+    _nn_cascading_hash(x, y, xrows, yrows, dim, k, cashash_idx, cashash_dist)
+    return cashash_idx.asarray(), cashash_dist.asarray()
+
+"""
+==================================================================================
 """
