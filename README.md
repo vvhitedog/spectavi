@@ -123,12 +123,12 @@ tests, make sure that you can successfully build Spectavi, then use
 * Run `python setup.py  <nosetests|test>` to not see print statements.
 
 Notes:
-- Above `<nosetests|test>` means to choose either `nosetests` or `test` as the parameter. `test` will work by detault, but `nosetests` only if you  have the `nose` package installed.
+- Above `<nosetests|test>` means to choose either `nosetests` or `test` as the parameter. `test` will work by default, but `nosetests` only if you  have the `nose` package installed.
 
 ## Examples
 
-The examples included with this library require both the `matplotlib` and
-`scipy` python libraries (and possibly `skimage`.)
+The examples included with this library require both the `matplotlib` library for visualization. Optionally, there is a requirement for `open3d` to visualize the (sparse) point clouds.
+This is an optional requirement as other tools can be use to visualize the output `ply` format files, one open-source tool being [meshlab](http://www.meshlab.net/).
 
 
 ## Debugging
