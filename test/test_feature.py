@@ -119,3 +119,34 @@ class FeatureTests(TestCase):
         max_diff_count = np.sum(
             np.abs(gt_nnd - nnd) > 0)
         self.assertLessEqual(max_diff_count, 0)
+
+    def nn_cascading_hash_test(self):
+        """
+        Compute nearest neighbour matching using nn_cascading_hash, and check
+        that results reach expected error levels.
+
+        XXX: There is randomness in the `nn_cascading_hash` call in the
+        hashtable generation which is not controlled by the numpy seed set
+        above, therefore, results may vary between repeated runs. A generous
+        threshold is recommended for this test to ensure it passes automatic
+        testing.
+        """
+        xrows = 200
+        dim = 144
+        yrows = 200
+        k = 2
+        x = np.random.randn(xrows, dim).astype('float32')
+        y = np.random.randn(yrows, dim).astype('float32')
+        x = feature.normalize_to_ubyte_and_multiple_16_dim(x)
+        y = feature.normalize_to_ubyte_and_multiple_16_dim(y)
+        nni, nnd = feature.nn_cascading_hash(x,y,m=8,n=16,g=5)
+        gt_nni, gt_nnd = brute_force_nn_batched(
+            x.astype('int32'), y.astype('int32'), k, p=1, get_dist=True)
+        max_diff_count = np.sum(
+            np.abs(gt_nni - nni) > 0)
+        #XXX: set a threshold of .4. This is very generous, as it translates to
+        #     200*.4 = 80, 2*80 = 160, whereas we expect much less than 100
+        #     incorrect matches.
+        print (max_diff_count)
+        allowed_diff = 2*round(.4 * yrows)
+        self.assertLessEqual(max_diff_count, allowed_diff)

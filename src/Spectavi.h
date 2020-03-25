@@ -11,5 +11,7 @@
 #include "NdArray.h"
 #include "RansacFitter.h"
 #include "Sift.h"
+#include "BruteForceNnL1K2.h"
+#include "CascadingHashNn.h"
 
 #endif // SPECTAVI_DEFINITIONS_H
