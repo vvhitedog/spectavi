@@ -249,17 +249,20 @@ _nn_cascading_hash.argtypes = [ndpointer(ct.c_float, flags="C_CONTIGUOUS"),
                                ct.c_int,
                                ct.c_int,
                                ct.c_int,
+                               ct.c_int,
+                               ct.c_int,
+                               ct.c_int,
                                ct.POINTER(NdArray),
                                ct.POINTER(NdArray), ]
 
-def nn_cascading_hash(x, y, k=2):
+def nn_cascading_hash(x, y, k=2, m=12, n=4, g=2):
     xrows, xdim = x.shape
     yrows, ydim = y.shape
     assert ydim == xdim
     dim = xdim
     cashash_idx = NdArray(dtype='uint64')
     cashash_dist = NdArray(dtype='float32')
-    _nn_cascading_hash(x, y, xrows, yrows, dim, k, cashash_idx, cashash_dist)
+    _nn_cascading_hash(x, y, xrows, yrows, dim, k, m, n, g, cashash_idx, cashash_dist)
     return cashash_idx.asarray(), cashash_dist.asarray()
 
 """

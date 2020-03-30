@@ -241,8 +241,13 @@ void nn_kmedians(const float *x, const float *y, int xrows, int yrows, int dim,
 }
 
 void nn_cascading_hash(const float *x, const float *y, int xrows, int yrows,
-                       int dim, int k, NdArray *outidx, NdArray *outdist) {
-  CascadingHashNn<> nn(x, y, xrows, yrows, dim);
+                       int dim, int k,
+                       int hash_bit_rate, int num_hash_tables,
+                       int num_candidate_neighbours,
+                       NdArray *outidx, NdArray *outdist) {
+  CascadingHashNn<> nn(x, y, xrows, yrows, dim,
+                       hash_bit_rate, num_hash_tables,
+                       num_candidate_neighbours);
   ndarray_set_size(outidx, yrows, k);
   ndarray_alloc(outidx);
   ndarray_set_size(outdist, yrows, k);

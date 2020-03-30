@@ -103,14 +103,40 @@ def step1_sift_detect(args):
 def step2_match_keypoints(args, step1_out):
     """Using output of step1, find likely matches."""
     x, y = step1_out
-    with Timer('step2-computation'):
-        #_x = normalize_to_ubyte(x)
-        #_y = normalize_to_ubyte(y)
-        #nn_idx, nn_dist = nn_bruteforcel1k2(
-        #    _x, _y, nthreads=multiprocessing.cpu_count())
-        _x = normalize_to_ubyte(x).astype('float32')
-        _y = normalize_to_ubyte(y).astype('float32')
-        nn_idx, nn_dist = nn_cascading_hash(_x, _y)
+    _x = (normalize_to_ubyte(x)).astype('uint8')+128
+    _y = (normalize_to_ubyte(y)).astype('uint8')+128
+    bench = dict()
+    import time
+    import itertools
+    import pickle
+    with Timer('bf-comp'):
+        start_time = time.time()
+        bf_nn_idx, bf_nn_dist = nn_bruteforcel1k2(
+            _x, _y, nthreads=multiprocessing.cpu_count())
+        elapsed_time = time.time() - start_time
+        bench[-1,-1,-1]  = [elapsed_time,1.,1.]
+    _x = normalize_to_ubyte(x).astype('float32')
+    _y = normalize_to_ubyte(y).astype('float32')
+    ms = [12,14,16,18,20,22]
+    ns = [1,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]
+    gs = [0,1,2,4]
+    for (m,n,g) in itertools.product(ms,ns,gs):
+        with Timer('step2-computation'):
+            #m, n, g = 12, 4, 4
+            start_time = time.time()
+            nn_idx, nn_dist = nn_cascading_hash(_x, _y, m=m, n=n, g=g)
+            elapsed_time = time.time() - start_time
+            cmp_idx = np.abs(nn_idx.astype('int64')- bf_nn_idx.astype('int64')) == 0
+            cmp_1_percent = np.sum(cmp_idx[:,0]) / float(cmp_idx.shape[0])
+            cmp_2_percent = np.sum(cmp_idx) / float(np.prod(cmp_idx.shape))
+            result = [elapsed_time,cmp_1_percent,cmp_2_percent]
+            bench[m,n,g]  = result
+            print m,n,g, ' : ', result
+    print bench
+    with open("/tmp/bench.pickle",'w') as f:
+        pickle.dump(bench,f)
+    #print np.sum(cmp_idx), np.sum(cmp_idx) / float(np.prod(cmp_idx.shape))
+    #print "cmp:", np.abs(nn_idx.astype('int64')- bf_nn_idx.astype('int64')) == 0
     ratio = nn_dist[:, 1] / nn_dist[:, 0].astype('float64')
     pass_idx = ratio >= args.min_ratio
     idx0, _ = nn_idx.T

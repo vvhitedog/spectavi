@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <list>
+#include <queue>
 #include <random>
 #include <unordered_map>
 #include <unordered_set>
@@ -18,8 +19,7 @@
 namespace spectavi {
 
 namespace filter {
-template<typename HashingNn>
-class SetFilter {
+template <typename HashingNn> class SetFilter {
 private:
   std::unordered_set<int> m_idx;
   std::unordered_set<int>::iterator m_pos;
@@ -35,7 +35,7 @@ public:
 
   void init(int iyr) {
     m_idx.clear();
-    m_nn.filter_potential_neighbours(iyr,m_idx);
+    m_nn.filter_potential_neighbours(iyr, m_idx);
     m_pos = m_idx.begin();
   }
 
@@ -68,10 +68,14 @@ private:
   MatrixTypeMap m_x;
   MatrixTypeMap m_y;
   const int m_hash_bit_rate;
-  const Scalar m_num_hash_table;
+  const int m_num_hash_table;
+  const int m_num_candidate_neighbours;
 
   std::vector<MatrixType>
       m_hash_dicts; // the hyper-planes used to generate bit-codes
+
+  std::vector<MatrixType>
+      m_intermediate_form_y; // intermediate calculation for y
 
   MatrixTypeHash m_hashcodes_x; // converted hashcodes for x
   MatrixTypeHash m_hashcodes_y; // converted hashcodes for y
@@ -130,9 +134,54 @@ private:
     }
   }
 
+  void generate_intermediate_form_for_y() {
+    m_intermediate_form_y.resize(m_num_hash_table);
+    for (int i = 0; i < m_num_hash_table; ++i) {
+      m_intermediate_form_y[i] = m_y * m_hash_dicts[i];
+    }
+  }
+
   void generate_hashcodes() {
     generate_hashcodes_for_data(m_x, m_hashcodes_x);
-    generate_hashcodes_for_data(m_y, m_hashcodes_y);
+    //    generate_hashcodes_for_data(m_y, m_hashcodes_y);
+    generate_intermediate_form_for_y();
+  }
+
+  void generate_y_candidate_hashcodes(int i, int j, std::list<hashcode> &dst,
+                                      int cutoff = 2) const {
+    MatrixType row = m_intermediate_form_y[j].row(i); // need a copy
+    std::priority_queue<std::pair<Scalar, int>> candidates;
+    hashcode ret = 0;
+    for (int i = 0; i < row.size(); ++i) {
+      candidates.push(std::make_pair(std::abs(row(i)), i));
+      if (candidates.size() > cutoff) {
+        candidates.pop();
+      }
+      if (row(i) >= 0) {
+        ret |= (1 << i);
+      }
+    }
+    hashcode start_ret = ret;
+    std::list<int> top_idx;
+    while (candidates.size()) {
+      top_idx.push_back(candidates.top().second);
+      candidates.pop();
+    }
+    int limit = 1 << cutoff;
+    for (int ii = 0; ii < limit; ++ii) {
+      int i_idx = 0;
+      for (auto &idx : top_idx) {
+        ret ^= (ret & (1 << idx)); // zero out the bit
+        int x = (ii & (1 << i_idx++)) ? 1 : 0;
+        ret |= (x << idx); // set it to permutation
+      }
+      dst.push_back(ret);
+    }
+
+    if (std::find(dst.begin(), dst.end(), start_ret) == dst.end()) {
+      throw std::runtime_error(
+          "hashing calc: sanity check finds calc is incorrect.");
+    }
   }
 
   void initialize_hash_tables() {
@@ -146,42 +195,33 @@ private:
     }
   }
 
-  // void print_stats() const {
-  //  for (int j = 0; j < m_num_hash_table; ++j) {
-  //    std::vector<int> sizedump;
-  //    FILE *stream = nullptr;
-  //    std::string fn = "/tmp/dump" + std::to_string(j);
-  //    stream = fopen(fn.c_str(), "w");
-  //    for (auto &ht : m_hash_tables[j]) {
-  //      sizedump.push_back(ht.second.size());
-  //    }
-  //    fwrite(sizedump.data(), sizeof(int), sizedump.size(), stream);
-  //    fclose(stream);
-  //  }
-  //}
-
 public:
   CascadingHashNn(const Scalar *x, const Scalar *y, int xrows, int yrows,
-                  int dim, int hash_bit_rate = 12, int num_hash_table = 8)
+                  int dim, int hash_bit_rate = 12, int num_hash_table = 4,
+                  int num_candidate_neighbours = 2)
       : m_x(x, xrows, dim), m_y(y, yrows, dim), m_hash_bit_rate(hash_bit_rate),
-        m_num_hash_table(num_hash_table) {
+        m_num_hash_table(num_hash_table),
+        m_num_candidate_neighbours(num_candidate_neighbours) {
     initialize_hash_tables();
-    // print_stats();
   }
 
-  void
-  filter_potential_neighbours(Label iyr,
-                              std::unordered_set<int> &neighbours) const {
+  void filter_potential_neighbours(Label iyr,
+                                   std::unordered_set<int> &neighbours) const {
     for (int iht = 0; iht < m_num_hash_table; ++iht) {
       hashcode ycode = m_hashcodes_y(iyr, iht);
+      std::list<hashcode> candidate_hashcodes;
+      generate_y_candidate_hashcodes(iyr, iht, candidate_hashcodes,
+                                     m_num_candidate_neighbours);
       const auto &ht = m_hash_tables[iht];
-      auto it = ht.find(ycode);
-      if (it == ht.end()) { // didn't find any elements in this bucket
-        continue;
-      }
-      const auto &list = it->second;
-      for (const auto &idx : list) {
-        neighbours.insert(idx);
+      for (auto &_ycode : candidate_hashcodes) {
+        auto it = ht.find(_ycode);
+        if (it == ht.end()) { // didn't find any elements in this bucket
+          continue;
+        }
+        const auto &list = it->second;
+        for (const auto &idx : list) {
+          neighbours.insert(idx);
+        }
       }
     }
   }
@@ -190,21 +230,6 @@ public:
                        Eigen::Ref<MatrixType> out_dist, int nthread = 8) const {
     typedef filter::SetFilter<CascadingHashNn> FilterType;
     FilterType filter(*this);
-//    for (int iyr = 0; iyr < m_y.rows(); ++iyr) {
-//      filter::SetFilter &filt = filts[iyr];
-//      for (int iht = 0; iht < m_num_hash_table; ++iht) {
-//        hashcode ycode = m_hashcodes_y(iyr, iht);
-//        const auto &ht = m_hash_tables[iht];
-//        auto it = ht.find(ycode);
-//        if (it == ht.end()) { // didn't find any elements in this bucket
-//          continue;
-//        }
-//        const auto &list = it->second;
-//        for (const auto &idx : list) {
-//          filt.add(idx);
-//        }
-//      }
-//    }
     typedef BruteForceNnL1K2<MatrixTypeLabel> BruteForceNn;
     typename BruteForceNn::MatrixType bf_x, bf_y;
     typename BruteForceNn::MatrixTypeBig bf_dist(m_y.rows(), 2);
