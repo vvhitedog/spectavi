@@ -33,7 +33,7 @@ sequentially to produce a useful product using a series of steps.
 ## Dependencies
 
 This library is meant to be as self-contained as possible. However, some
-algorithms that give good results (ex. SIFT or approximate NN) are complex
+algorithms that give good results (ex. SIFT) are complex
 enough that they fall outside the scope of the purpose of this project (which
 is to elucidate,) but would be folly to overlook. In cases like this, external
 projects which have high-quality implementations are linked as dependencies of
@@ -43,7 +43,7 @@ Outside of these algorithm-spefic dependencies, there are a few dependencies
 for the backend C++ code which are currently: Eigen3.
 
 There are as well some python based dependencies: numpy (core), cndarray
-(core), matplotlib (examples),  scipy (examples), skimage(examples).
+(core), matplotlib (examples),  open3d (examples).
 
 The singular dependency that does not fit the other descriptions given so
 far is the [ctypes_ndarray](https://github.com/vvhitedog/ctypes_ndarray)
