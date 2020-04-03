@@ -58,12 +58,20 @@ def homogeneous(x):
 def normalize_to_ubyte(_x):
     """Simple range normalization to an unsigned byte."""
     x = _x.copy()
-    x = x - np.mean(x,axis=0,keepdims=True)
-    x = x / np.std(x,axis=0,keepdims=True)
-    drange = np.max(x,axis=0,keepdims=True) - np.min(x,axis=0,keepdims=True)
-    x0 = ((x- np.min(x,axis=0,keepdims=True)) / drange * 128 )
-    x0 = x0 - np.mean(x0,axis=0,keepdims=True)
+    x0 = x
+    # is there some way to multiply by a constant so that a series of numbers has 
+    # zero mean? No, unless that constant is zero:
+    # <c*a_n> = c * <a_n>, for a series a_n, constant c
+    # similarily : 
+    # <a_n+c> = <a_n> + c, for a series a_n, constant c
+    x0 = x0 - np.mean(x0,axis=0,keepdims=True) #de-mean 
+    max_per_col = np.max(x0,axis=0,keepdims=True)
+    min_per_col = np.min(x0,axis=0,keepdims=True)
+    norm = np.max(np.stack([max_per_col,-min_per_col]),axis=0)
+    x0 = (x0) / norm * 127 
     x = np.round(x0)
+    x[x>127] = 127
+    x[x<-127] = 127
     xrows, dim = x.shape
     new_dim = int(np.ceil(dim / 16.) * 16)
     xx = np.zeros([xrows, new_dim])
