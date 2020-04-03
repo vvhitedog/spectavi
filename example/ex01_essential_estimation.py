@@ -71,7 +71,7 @@ def normalize_to_ubyte(_x):
     x0 = (x0) / norm * 127 
     x = np.round(x0)
     x[x>127] = 127
-    x[x<-127] = 127
+    x[x<-128] = 128
     xrows, dim = x.shape
     new_dim = int(np.ceil(dim / 16.) * 16)
     xx = np.zeros([xrows, new_dim])
