@@ -147,7 +147,7 @@ def step2_match_keypoints(args, step1_out):
             pickle.dump(bench,f)
     else:
         with Timer('step2-computation'):
-            m, n, g = 14, 4, 2
+            m, n, g = 16, 4, 4
             _x = normalize_to_ubyte(x).astype('float32')
             _y = normalize_to_ubyte(y).astype('float32')
             nn_idx, nn_dist = nn_cascading_hash(_x, _y, m=m, n=n, g=g)
