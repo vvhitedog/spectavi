@@ -102,14 +102,14 @@ void image_pair_rectification(const double *P0, const double *P1,
     {
       ndarray_set_size(rectified0, rectifier.rows(), rectifier.cols(), nchan);
       ndarray_alloc(rectified0);
-      auto mat = rectifier.rectified0();
+      const auto &mat = rectifier.rectified0();
       std::copy(mat.data(), mat.data() + mat.size(),
                 (Scalar *)rectified0->m_data);
     }
     {
       ndarray_set_size(rectified1, rectifier.rows(), rectifier.cols(), nchan);
       ndarray_alloc(rectified1);
-      auto mat = rectifier.rectified1();
+      const auto &mat = rectifier.rectified1();
       std::copy(mat.data(), mat.data() + mat.size(),
                 (Scalar *)rectified1->m_data);
     }

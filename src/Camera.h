@@ -431,13 +431,13 @@ public:
 
   int cols() const { return m_output_cols; }
 
-  MatrixType rectified0() const { return m_rim0; }
+  const MatrixType& rectified0() const { return m_rim0; }
 
-  MatrixType rectified1() const { return m_rim1; }
+  const MatrixType& rectified1() const { return m_rim1; }
 
-  MatrixTypeI rectified_idx0() const { return m_idx0; }
+  const MatrixTypeI& rectified_idx0() const { return m_idx0; }
 
-  MatrixTypeI rectified_idx1() const { return m_idx1; }
+  const MatrixTypeI& rectified_idx1() const { return m_idx1; }
 };
 
 } // namespace spectavi
