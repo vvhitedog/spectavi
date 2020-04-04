@@ -234,9 +234,8 @@ private:
 
 public:
   KMedians(const Scalar *x, int xrows, int dim, int k)
-      : m_x(x, xrows, dim), m_k(k),
-        m_median_cols(m_k), m_median_idx(m_k), m_medians(m_k, m_x.cols()),
-        m_point_to_median(m_x.rows(), -1) {
+      : m_x(x, xrows, dim), m_k(k), m_median_cols(m_k), m_median_idx(m_k),
+        m_medians(m_k, m_x.cols()), m_point_to_median(m_x.rows(), -1) {
     m_sigma.resize(m_x.rows());
     int c = 0;
     for (auto &x : m_sigma) {
@@ -263,11 +262,12 @@ public:
                                Eigen::Ref<MatrixType> out_dist, int c = 5,
                                int k = 2) const {
     // create full brute-force object that will be reused using filtering
-    BruteForceNn<> full_nn(other.m_x.data(), m_x.data(),
-                           other.m_x.rows(), m_x.rows(), m_x.cols(), 1);
+    BruteForceNn<> full_nn(other.m_x.data(), m_x.data(), other.m_x.rows(),
+                           m_x.rows(), m_x.cols(), 1);
     // Use bruteforce to find nearest neighbours among medians
     BruteForceNn<> median_nn(other.m_medians.data(), m_medians.data(),
-                             other.m_medians.rows(), m_medians.rows(), m_x.cols(), 1);
+                             other.m_medians.rows(), m_medians.rows(),
+                             m_x.cols(), 1);
     MatrixType median_dist(m_medians.rows(), c);
     MatrixTypeLabel median_idx(m_medians.rows(), c);
     median_nn.find_neighbours(median_idx, median_dist, c);
@@ -290,8 +290,7 @@ public:
         }
       }
       // run the full brute-force nn, however with filters based on kmedians
-      full_nn.find_neighbours(out_idx, out_dist, other_filter, this_filter,
-                              k);
+      full_nn.find_neighbours(out_idx, out_dist, other_filter, this_filter, k);
     }
   }
 };

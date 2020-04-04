@@ -3,8 +3,8 @@
 
 #include "EigenDefinitions.h"
 #include <queue>
-#include <vector>
 #include <unordered_set>
+#include <vector>
 
 /* brute-force computation of nearest neighbours under a p-norm */
 
@@ -24,12 +24,9 @@ private:
   const Scalar m_mu;
 
 public:
-  BruteForceNn(const Scalar *x,
-               const Scalar *y, int xrows, int yrows, int dim, double p = .5,
-               Scalar mu = 0.)
-      : m_x(x, xrows, dim),
-        m_y(y, yrows, dim), m_p(p),
-        m_mu(mu) {}
+  BruteForceNn(const Scalar *x, const Scalar *y, int xrows, int yrows, int dim,
+               double p = .5, Scalar mu = 0.)
+      : m_x(x, xrows, dim), m_y(y, yrows, dim), m_p(p), m_mu(mu) {}
 
   void find_neighbours(Eigen::Ref<MatrixTypeLabel> out_idx,
                        Eigen::Ref<MatrixType> out_dist, int k = 2) const {

@@ -44,8 +44,7 @@ private:
   std::list<sift_data> m_sift_kps; // keypoint-descriptors
 
 public:
-  SiftFilter(const Scalar *im, int rows, int cols)
-      : m_im(im, rows, cols) {}
+  SiftFilter(const Scalar *im, int rows, int cols) : m_im(im, rows, cols) {}
 
   void filter() {
 

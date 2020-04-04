@@ -204,7 +204,8 @@ void nn_bruteforcei(const int *x, const int *y, int xrows, int yrows, int dim,
 }
 
 void nn_bruteforcel1k2(const uint8_t *x, const uint8_t *y, int xrows, int yrows,
-                       int dim, int nthreads, NdArray *outidx, NdArray *outdist) {
+                       int dim, int nthreads, NdArray *outidx,
+                       NdArray *outdist) {
   const int K = 2;
   ndarray_set_size(outidx, yrows, K);
   ndarray_alloc(outidx);
@@ -212,7 +213,7 @@ void nn_bruteforcel1k2(const uint8_t *x, const uint8_t *y, int xrows, int yrows,
   ndarray_alloc(outdist);
   RowMatrixXsMap _outidx(reinterpret_cast<size_t *>(outidx->m_data), yrows, K);
   RowMatrixXiMap _outdist(reinterpret_cast<int *>(outdist->m_data), yrows, K);
-  BruteForceNnL1K2<> nn(x,y,xrows,yrows,dim);
+  BruteForceNnL1K2<> nn(x, y, xrows, yrows, dim);
   nn.find_neighbours(_outidx, _outdist, nthreads);
 }
 

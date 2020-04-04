@@ -42,11 +42,9 @@ private:
   const int m_K;
 
 public:
-  BruteForceNnL1K2(const Scalar *x,
-                   const Scalar *y, int xrows,
-                   int yrows, int dim)
-      : m_x(x,xrows,dim),
-        m_y(y,yrows,dim), m_K(2) {
+  BruteForceNnL1K2(const Scalar *x, const Scalar *y, int xrows, int yrows,
+                   int dim)
+      : m_x(x, xrows, dim), m_y(y, yrows, dim), m_K(2) {
     if (m_x.cols() != m_y.cols()) {
       throw std::runtime_error("Matrix inner dimensions must match.");
     }
@@ -63,7 +61,7 @@ public:
     const int dim = m_x.cols();
     const int n128i = (dim / 16); // number of 128-byte datatypes per row
     // scan through every row
-  #pragma omp parallel for num_threads(nthread)
+#pragma omp parallel for num_threads(nthread)
     for (int irow = 0; irow < m_y.rows(); ++irow) {
       // get local references to outputs
       auto &first_i = out_idx(irow, 0);
