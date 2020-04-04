@@ -42,15 +42,22 @@ class CMakeBuild(build_ext):
         if os.environ.get('CMAKE_INSTALL_PREFIX') is not None:
             cmake_args.append('-DCMAKE_INSTALL_PREFIX='+os.environ['CMAKE_INSTALL_PREFIX'])
 
+        # always make compilation db
+        cmake_args.append('-DCMAKE_EXPORT_COMPILE_COMMANDS=ON')
+
         # XXX: if pdb is set, use a debug build
         cmdline_args = self.distribution.script_args
         cmdline_args = [arg.strip('--') for arg in cmdline_args]
         do_debug = self.debug
-        do_profile = os.environ.get('GPERF_PROFILER_BUILD')
-        #if 'pdb' in cmdline_args and ('test' in cmdline_args or 'nosetests' in cmdline_args):
-        #    do_debug = True
         if 'debug' in cmdline_args:
             do_debug = True
+
+        # check env variables for other flags to set
+        env_gperf = os.environ.get('GPERF_PROFILER_BUILD')
+        env_openmp = os.environ.get('ENABLE_OPENMP')
+        do_profile = env_gperf is not None and env_gperf == "ON"
+        do_openmp = env_openmp is not None and env_openmp == "ON"
+
 
         cfg = 'Debug' if do_debug else ( 'RelWithDebInfo' if do_profile else 'Release')
         build_args = ['--config', cfg]
@@ -63,9 +70,15 @@ class CMakeBuild(build_ext):
         else:
             cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
             build_args += ['--', '-j2']
-            if do_profile:
-                cmake_args += ['-DGPERF_PROFILER_BUILD=ON']
 
+        if do_profile:
+            cmake_args += ['-DGPERF_PROFILER_BUILD=ON']
+        else:
+            cmake_args += ['-DGPERF_PROFILER_BUILD=OFF']
+        if do_openmp:
+            cmake_args += ['-DENABLE_OPENMP=ON']
+        else:
+            cmake_args += ['-DENABLE_OPENMP=OFF']
 
         env = os.environ.copy()
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),

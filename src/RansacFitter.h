@@ -36,7 +36,7 @@ class RansacFitter {
         MatrixTypeI m_inlier_idx;
 
 
-        bool process_fundamental_matrix( const EigenDRef<const MatrixType> &F,
+        bool process_fundamental_matrix( const Eigen::Ref<const MatrixType> &F,
                                          double singular_value_ratio_allowed,
                                          int &inlier_count,
                                          Camera_t &best_P,
