@@ -21,8 +21,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import collections as mc
 from util import imread, Timer
-from spectavi.feature import sift_filter, nn_bruteforcel1k2,\
-nn_cascading_hash, normalize_to_ubyte_and_multiple_16_dim
+from spectavi.feature import nn_bruteforcel1k2,nn_cascading_hash
+from spectavi.feature import normalize_to_ubyte_and_multiple_16_dim
+from spectavi.feature import sift_filter, sift_filter_batch
 from spectavi.mvg import ransac_fitter, dlt_triangulate, image_pair_rectification
 import argparse
 import multiprocessing
@@ -62,7 +63,7 @@ def step1_sift_detect(args):
             force_grayscale=True)
            for image_filename in args.images]
     with Timer('step1-computation'):
-        siftkps = [sift_filter(im) for im in ims]
+        siftkps = sift_filter_batch(ims)
     # Begin Visualize
     c_im = np.hstack(ims)
     fig = plt.figure()
