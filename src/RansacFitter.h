@@ -158,12 +158,13 @@ public:
     if (!m_success) {
       m_best_fit_inlier_percent = 0;
     }
+    bool _success = m_success;
 #ifdef ENABLE_OPENMP
     omp_lock_t success_lock;
     omp_init_lock(&success_lock);
 #endif
     int done = 0;
-#pragma omp parallel for num_threads(nthread) shared(m_success)
+#pragma omp parallel for num_threads(nthread) shared(_success)
     for (int itry = 0; itry < m_maximum_tries; ++itry) {
       if (progressbar) {
 #pragma omp critical
@@ -181,7 +182,7 @@ public:
           std::cout << "|" << std::flush;
         }
       }
-      if (m_success) {
+      if (_success) {
         continue;
       }
       FundamentalMatrixFitter<MatrixType> fmat_fitter;
@@ -209,8 +210,8 @@ public:
 #ifdef ENABLE_OPENMP
           omp_set_lock(&success_lock);
 #endif
-          if (!m_success) {
-            m_success = percent_inlier > m_required_percent_inliers;
+          if (!_success) {
+            _success = percent_inlier > m_required_percent_inliers;
             m_best_fit_inlier_percent = percent_inlier;
             m_best_fit_essential_matrix = F0;
             m_best_fit_camera = cam;
@@ -231,8 +232,8 @@ public:
 #ifdef ENABLE_OPENMP
           omp_set_lock(&success_lock);
 #endif
-          if (!m_success) {
-            m_success = percent_inlier > m_required_percent_inliers;
+          if (!_success) {
+            _success = percent_inlier > m_required_percent_inliers;
             m_best_fit_inlier_percent = percent_inlier;
             m_best_fit_essential_matrix = F1;
             m_best_fit_camera = cam;
@@ -253,8 +254,8 @@ public:
 #ifdef ENABLE_OPENMP
           omp_set_lock(&success_lock);
 #endif
-          if (!m_success) {
-            m_success = percent_inlier > m_required_percent_inliers;
+          if (!_success) {
+            _success = percent_inlier > m_required_percent_inliers;
             m_best_fit_inlier_percent = percent_inlier;
             m_best_fit_essential_matrix = F2;
             m_best_fit_camera = cam;
@@ -272,6 +273,7 @@ public:
 #ifdef ENABLE_OPENMP
     omp_destroy_lock(&success_lock);
 #endif
+    m_success = _success;
   }
 
   bool success() const { return m_success; }
