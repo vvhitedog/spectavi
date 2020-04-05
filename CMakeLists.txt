@@ -53,6 +53,7 @@ add_library(spectavi SHARED ${SRCS})
 target_include_directories(spectavi PRIVATE ${EIGEN3_INCLUDE_DIR}
   ${CNDARRAY_INCLUDE_DIR} ${VLFEAT_INCLUDE_DIR} ${HNSWLIB_INCLUDE_DIR})
 if (ENABLE_OPENMP) 
+  add_definitions(-DENABLE_OPENMP)
   target_link_libraries(spectavi PUBLIC OpenMP::OpenMP_CXX ${PROFILER_LINK_FLAG} )
 else()
 if (GPERF_PROFILER_BUILD) 

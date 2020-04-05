@@ -10,6 +10,10 @@
 #include <iostream>
 #include <unordered_set>
 
+#ifdef ENABLE_OPENMP
+#include <omp.h>
+#endif
+
 namespace spectavi {
 
 #define PROGRESS_BAR_LENGTH 100
@@ -148,14 +152,21 @@ public:
   }
 
   void fit_essential(double singular_value_ratio_allowed = 3e-2,
-                     bool progressbar = false) {
+                     bool progressbar = false,
+                     int nthread = 8 ) {
     int nex = m_x0.rows();
     if (!m_success) {
       m_best_fit_inlier_percent = 0;
     }
+#ifdef ENABLE_OPENMP
+    omp_lock_t success_lock;
+    omp_init_lock(&success_lock);
+#endif
     int done = 0;
-    for (int itry = 0; itry < m_maximum_tries && !m_success; ++itry) {
+#pragma omp parallel for num_threads(nthread) shared(m_success)
+    for (int itry = 0; itry < m_maximum_tries; ++itry) {
       if (progressbar) {
+#pragma omp critical
         {
           done += 1;
           std::cout << "\r |";
@@ -169,6 +180,9 @@ public:
           }
           std::cout << "|" << std::flush;
         }
+      }
+      if (m_success) {
+        continue;
       }
       FundamentalMatrixFitter<MatrixType> fmat_fitter;
       for (int ix : floyd_sample(nex, 7)) {
@@ -192,11 +206,19 @@ public:
         if ((percent_inlier > m_required_percent_inliers ||
              m_find_best_even_in_failure) &&
             m_best_fit_inlier_percent < percent_inlier) {
-          m_success = percent_inlier > m_required_percent_inliers;
-          m_best_fit_inlier_percent = percent_inlier;
-          m_best_fit_essential_matrix = F0;
-          m_best_fit_camera = cam;
-          m_inlier_idx = inlier_idx;
+#ifdef ENABLE_OPENMP
+          omp_set_lock(&success_lock);
+#endif
+          if (!m_success) {
+            m_success = percent_inlier > m_required_percent_inliers;
+            m_best_fit_inlier_percent = percent_inlier;
+            m_best_fit_essential_matrix = F0;
+            m_best_fit_camera = cam;
+            m_inlier_idx = inlier_idx;
+          }
+#ifdef ENABLE_OPENMP
+          omp_unset_lock(&success_lock);
+#endif
         }
       }
       if (nroot >= 2 &&
@@ -206,11 +228,19 @@ public:
         if ((percent_inlier > m_required_percent_inliers ||
              m_find_best_even_in_failure) &&
             m_best_fit_inlier_percent < percent_inlier) {
-          m_success = percent_inlier > m_required_percent_inliers;
-          m_best_fit_inlier_percent = percent_inlier;
-          m_best_fit_essential_matrix = F1;
-          m_best_fit_camera = cam;
-          m_inlier_idx = inlier_idx;
+#ifdef ENABLE_OPENMP
+          omp_set_lock(&success_lock);
+#endif
+          if (!m_success) {
+            m_success = percent_inlier > m_required_percent_inliers;
+            m_best_fit_inlier_percent = percent_inlier;
+            m_best_fit_essential_matrix = F1;
+            m_best_fit_camera = cam;
+            m_inlier_idx = inlier_idx;
+          }
+#ifdef ENABLE_OPENMP
+          omp_unset_lock(&success_lock);
+#endif
         }
       }
       if (nroot >= 3 &&
@@ -220,17 +250,28 @@ public:
         if ((percent_inlier > m_required_percent_inliers ||
              m_find_best_even_in_failure) &&
             m_best_fit_inlier_percent < percent_inlier) {
-          m_success = percent_inlier > m_required_percent_inliers;
-          m_best_fit_inlier_percent = percent_inlier;
-          m_best_fit_essential_matrix = F2;
-          m_best_fit_camera = cam;
-          m_inlier_idx = inlier_idx;
+#ifdef ENABLE_OPENMP
+          omp_set_lock(&success_lock);
+#endif
+          if (!m_success) {
+            m_success = percent_inlier > m_required_percent_inliers;
+            m_best_fit_inlier_percent = percent_inlier;
+            m_best_fit_essential_matrix = F2;
+            m_best_fit_camera = cam;
+            m_inlier_idx = inlier_idx;
+          }
+#ifdef ENABLE_OPENMP
+          omp_unset_lock(&success_lock);
+#endif
         }
       }
     }
     if (progressbar) {
       std::cout << std::endl;
     }
+#ifdef ENABLE_OPENMP
+    omp_destroy_lock(&success_lock);
+#endif
   }
 
   bool success() const { return m_success; }

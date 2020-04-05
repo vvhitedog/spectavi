@@ -140,9 +140,9 @@ def step3_estimate_essential_matrix(args, step2_out):
                           ransac_quality[args.ransac_quality],
                           'reprojection_error_allowed': 4e-4,
                           'maximum_tries': 1000000,
-                          'find_best_even_in_failure': True,
+                          'find_best_even_in_failure': False,
                           'singular_value_ratio_allowed': 1e-2,
-                          'progressbar': True}
+                          'progressbar': False}
         ransac = ransac_fitter(x0, x1, options=ransac_options)
     # assert ransac['success']
     rE = ransac['essential']
