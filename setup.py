@@ -63,7 +63,7 @@ class CMakeBuild(build_ext):
         env_gperf = os.environ.get('GPERF_PROFILER_BUILD')
         env_openmp = os.environ.get('ENABLE_OPENMP')
         do_profile = env_gperf is not None and env_gperf == "ON"
-        do_openmp = env_openmp is not None and env_openmp == "ON"
+        donot_openmp = not(env_openmp is not None and env_openmp == "OFF")
 
 
         cfg = 'Debug' if do_debug else ( 'RelWithDebInfo' if do_profile else 'Release')
@@ -82,10 +82,10 @@ class CMakeBuild(build_ext):
             cmake_args += ['-DGPERF_PROFILER_BUILD=ON']
         else:
             cmake_args += ['-DGPERF_PROFILER_BUILD=OFF']
-        if do_openmp:
-            cmake_args += ['-DENABLE_OPENMP=ON']
-        else:
+        if donot_openmp:
             cmake_args += ['-DENABLE_OPENMP=OFF']
+        else:
+            cmake_args += ['-DENABLE_OPENMP=ON']
 
         env = os.environ.copy()
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),
