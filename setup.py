@@ -36,6 +36,13 @@ class CMakeBuild(build_ext):
         for ext in self.extensions:
             self.build_extension(ext)
 
+    def clean_compile_commands_db(self,filename):
+        with open(filename,'r') as f:
+            lines = [ " ".join([ word for word in line.split(" ") if word != '-fopenmp' ]) for line in f.readlines()  ]
+        with open(filename,'w') as f:
+            for line in lines:
+                f.write(line)
+
     def build_extension(self, ext):
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,]
@@ -86,6 +93,8 @@ class CMakeBuild(build_ext):
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
+        # clean up the compilation database
+        self.clean_compile_commands_db(os.path.join(self.build_temp,'compile_commands.json'))
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 

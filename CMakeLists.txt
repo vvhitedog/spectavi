@@ -15,7 +15,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 # Options to set
 option(GPERF_PROFILER_BUILD "Build with gperftools CPU profiling enabled." OFF )
 option(ENABLE_OPENMP "Enable Open MP use for multi-core implementations of \
-certain algorithms." OFF )
+certain algorithms." ON )
 
 find_package(Eigen3 REQUIRED)
 if (ENABLE_OPENMP)
