@@ -115,9 +115,14 @@ class CMakeBuild(build_ext):
 def get_version_from_cmake_file(cmake_file):
     with open(cmake_file,'r') as f:
         lines = [ l.strip() for l in f.readlines() ]
-    major_line = filter(lambda l: l.find('set(PROJECT_VERSION_MAJOR') != -1,lines)[0]
-    minor_line = filter(lambda l: l.find('set(PROJECT_VERSION_MINOR') != -1,lines)[0]
-    patch_line = filter(lambda l: l.find('set(PROJECT_VERSION_PATCH') != -1,lines)[0]
+    if sys.version_info[0] == 3:
+        major_line = next(filter(lambda l: l.find('set(PROJECT_VERSION_MAJOR') != -1,lines))
+        minor_line = next(filter(lambda l: l.find('set(PROJECT_VERSION_MINOR') != -1,lines))
+        patch_line = next(filter(lambda l: l.find('set(PROJECT_VERSION_PATCH') != -1,lines))
+    else:
+        major_line = filter(lambda l: l.find('set(PROJECT_VERSION_MAJOR') != -1,lines)[0]
+        minor_line = filter(lambda l: l.find('set(PROJECT_VERSION_MINOR') != -1,lines)[0]
+        patch_line = filter(lambda l: l.find('set(PROJECT_VERSION_PATCH') != -1,lines)[0]
     def get_num_from_line(line):
         return (line.split(' ')[-1].split(')')[0])
     version = '.'.join(map(get_num_from_line,[major_line,minor_line,patch_line]))
