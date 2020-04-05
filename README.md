@@ -72,9 +72,9 @@ project, which is a simple implementation of interfacing numpy data with C++
 - [x] ANN check against real computation: testing
 - [x] ANN ratio-test: example
 - [x] Highly optimized L1 brute-force nearest-neighbour (hopefully using SSE instructions)
-- [ ] Experiments for [cascade of hashes](http://openaccess.thecvf.com/content_cvpr_2014/papers/Cheng_Fast_and_Accurate_2014_CVPR_paper.pdf)
-- [ ] Implementation, tests, & benchmark for cascade of hashes
-- [ ] Highly optimized SSE implementation of cascade of hashes
+- [x] Experiments for [cascade of hashes](http://openaccess.thecvf.com/content_cvpr_2014/papers/Cheng_Fast_and_Accurate_2014_CVPR_paper.pdf)
+- [x] Implementation, tests, & benchmark for cascade of hashes
+- [x] Highly optimized SSE implementation of cascade of hashes (note that this just re-uses the existing optimized L1 implementation.)
 
 ### Defunct
 - [ ] ANN using SVD: implementation (may not implement this, low priority)
