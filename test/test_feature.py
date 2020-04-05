@@ -147,6 +147,5 @@ class FeatureTests(TestCase):
         #XXX: set a threshold of .4. This is very generous, as it translates to
         #     200*.4 = 80, 2*80 = 160, whereas we expect much less than 100
         #     incorrect matches.
-        print (max_diff_count)
         allowed_diff = 2*round(.4 * yrows)
         self.assertLessEqual(max_diff_count, allowed_diff)
