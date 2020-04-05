@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <emmintrin.h>
+#include <vector>
 
 /*
  * specialized brute-force computation of L1 norm with K=2 neighbours, designed
@@ -12,6 +13,31 @@
  */
 
 namespace spectavi {
+
+namespace filter {
+
+struct IdentityFilter {
+
+private:
+    int m_size;
+    int m_pos;
+
+public:
+    IdentityFilter(int s): m_size(s),
+      m_pos(-1) {
+    }
+
+    void init( int iyr ) {
+    }
+
+    int operator () () {
+        m_pos++;
+        return m_pos < m_size ? m_pos : -1;
+    }
+
+};
+
+}
 
 namespace implementation {
 uint16_t sad_16(const uint8_t a[16], const uint8_t b[16]) {
@@ -55,8 +81,10 @@ public:
     }
   }
 
+  template<typename Filter = filter::IdentityFilter>
   void find_neighbours(Eigen::Ref<MatrixTypeLabel> out_idx,
                        Eigen::Ref<MatrixTypeBig> out_dist,
+                       Filter &filt,
                        int nthread = 8) const {
     const int dim = m_x.cols();
     const int n128i = (dim / 16); // number of 128-byte datatypes per row
@@ -76,7 +104,9 @@ public:
       // start main computation
       ScalarBig worst_dist = -1;
       const Scalar *_y = m_y.row(irow).data();
-      for (int irowx = 0; irowx < m_x.rows(); ++irowx) {
+      Filter _local_filt = filt; // copy the filter locally for this thread
+      _local_filt.init(irow); // init the filter for each y-row
+      for (int irowx = _local_filt(); irowx >= 0; irowx = _local_filt() ) {
         const Scalar *_x = m_x.row(irowx).data();
         ScalarBig distp = 0;
         bool prune = false;

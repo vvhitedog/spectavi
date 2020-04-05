@@ -237,4 +237,65 @@ def nn_kmedians(x, y, k, c=5):
 
 """
 ==================================================================================
+cascading_hash
+==================================================================================
+"""
+
+_nn_cascading_hash = clib.nn_cascading_hash
+_nn_cascading_hash.restype = None
+_nn_cascading_hash.argtypes = [ndpointer(ct.c_float, flags="C_CONTIGUOUS"),
+                               ndpointer(ct.c_float, flags="C_CONTIGUOUS"),
+                               ct.c_int,
+                               ct.c_int,
+                               ct.c_int,
+                               ct.c_int,
+                               ct.c_int,
+                               ct.c_int,
+                               ct.c_int,
+                               ct.POINTER(NdArray),
+                               ct.POINTER(NdArray), ]
+
+def nn_cascading_hash(x, y, k=2, m=12, n=4, g=2):
+    xrows, xdim = x.shape
+    yrows, ydim = y.shape
+    assert ydim == xdim
+    dim = xdim
+    cashash_idx = NdArray(dtype='uint64')
+    cashash_dist = NdArray(dtype='float32')
+    _nn_cascading_hash(x, y, xrows, yrows, dim, k, m, n, g, cashash_idx, cashash_dist)
+    return cashash_idx.asarray(), cashash_dist.asarray()
+
+"""
+==================================================================================
+normalization
+==================================================================================
+"""
+
+def normalize_to_ubyte_and_multiple_16_dim(x,dtype='float32'):
+    """
+    Normalize a data matrix to:
+    - have zero mean for each column
+    - be in the range [-128,127]
+    - return as required `dtype`
+    The main use of this function is with `nn_cascading_hash` and
+    `nn_bruteforcel1k2` which make assumptions range is between [-128,127] and
+    [0,255] respectively.
+    """
+    x0 = x
+    x0 = x0 - np.mean(x0,axis=0,keepdims=True) #de-mean 
+    max_per_col = np.max(x0,axis=0,keepdims=True)
+    min_per_col = np.min(x0,axis=0,keepdims=True)
+    norm = np.max(np.stack([max_per_col,-min_per_col]),axis=0)
+    x0 = (x0) / norm * 128 
+    x0 = np.round(x0)
+    x0[x0>127] = 127
+    x0[x0<-128] = -128
+    xrows, dim = x0.shape
+    new_dim = int(np.ceil(dim / 16.) * 16)
+    xx = np.zeros([xrows, new_dim])
+    xx[:, :dim] = x0
+    return xx.astype(dtype)
+
+"""
+==================================================================================
 """

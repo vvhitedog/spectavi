@@ -21,7 +21,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import collections as mc
 from util import imread, Timer
-from spectavi.feature import sift_filter, nn_bruteforcel1k2
+from spectavi.feature import sift_filter, nn_bruteforcel1k2,\
+nn_cascading_hash, normalize_to_ubyte_and_multiple_16_dim
 from spectavi.mvg import ransac_fitter, dlt_triangulate, image_pair_rectification
 import argparse
 import multiprocessing
@@ -55,20 +56,6 @@ def homogeneous(x):
     return np.hstack((x, np.ones((x.shape[0], 1))))
 
 
-def normalize_to_ubyte(x):
-    """Simple range normalization to an unsigned byte."""
-    xrows, dim = x.shape
-    new_dim = int(np.ceil(dim / 16.) * 16)
-    xx = np.zeros([xrows, new_dim])
-    xx[:, :dim] = x
-    x = xx
-    col_mins = np.min(x, axis=0)
-    col_maxs = np.max(x, axis=0)
-    col_range = col_maxs - col_mins
-    col_range[col_range == 0] = 1  # avoid division by zero
-    return (255. * (x - col_mins.reshape(1, -1)) / col_range.reshape(1, -1)).astype('uint8')
-
-
 def step1_sift_detect(args):
     """Run SIFT key-point detection and descriptors on images."""
     ims = [imread(image_filename, dtype='float32',
@@ -95,11 +82,17 @@ def step1_sift_detect(args):
 def step2_match_keypoints(args, step1_out):
     """Using output of step1, find likely matches."""
     x, y = step1_out
+    _x = normalize_to_ubyte_and_multiple_16_dim(x)
+    _y = normalize_to_ubyte_and_multiple_16_dim(y)
     with Timer('step2-computation'):
-        _x = normalize_to_ubyte(x)
-        _y = normalize_to_ubyte(y)
-        nn_idx, nn_dist = nn_bruteforcel1k2(
-            _x, _y, nthreads=multiprocessing.cpu_count())
+        if args.matching_method == 'bruteforce':
+            nn_idx, nn_dist = nn_bruteforcel1k2(
+                _x.astype('uint8')+128, _y.astype('uint8')+128,
+                nthreads=multiprocessing.cpu_count())
+        elif args.matching_method == 'cascading-hash':
+            m, n, g = 16, 4, 4
+            nn_idx, nn_dist = nn_cascading_hash(_x, _y,
+                    m=m, n=n, g=g)
     ratio = nn_dist[:, 1] / nn_dist[:, 0].astype('float64')
     pass_idx = ratio >= args.min_ratio
     idx0, _ = nn_idx.T
@@ -163,7 +156,7 @@ def step3_estimate_essential_matrix(args, step2_out):
     return ransac, x0, x1, xd, yd
 
 
-def step4_traingulate_points(args, step3_out):
+def step4_triangulate_points(args, step3_out):
     """Triangulate the points detected as inliers from the previous step."""
     ransac, x0, x1, xd, yd = step3_out
     idx = ransac['inlier_idx']
@@ -252,7 +245,7 @@ def run(args):
     if cache is None and args.cache:
         save_cache(args, step2_out)
     step3_out = step3_estimate_essential_matrix(args, step2_out)
-    step4_out = step4_traingulate_points(args, step3_out)
+    step4_out = step4_triangulate_points(args, step3_out)
     step5_rectify_images(args, step4_out)
     plt.show(block=True)
     try_open3d_viz(args)
@@ -279,6 +272,9 @@ if __name__ == '__main__':
                         help='percent of matches to show (for legibility) (default=.1)')
     parser.add_argument('--ransac_quality', default='ultra', choices=['low', 'medium', 'high', 'ultra', 'uber'], action='store',
                         help='quality of ransac fit to perform (default=ultra)')
+    parser.add_argument('--matching_method', default='cascading-hash', choices=['bruteforce', 'cascading-hash'], action='store',
+                        help='which method to use, bruteforce = brute force matching, cascading-hash = variant"+\
+                                " on cascading hash method (default=cascading-hash)')
     parser.add_argument('--outdir', default='ex01_out', type=str,
                         help='output is placed in this directory (default="ex01_out")')
     parser.add_argument('--rsf', default=1., type=float, action='store',
