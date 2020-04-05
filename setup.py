@@ -10,6 +10,7 @@ from distutils.version import LooseVersion
 
 from setuptools.command.install import install as _install
 import inspect
+import json # for cleaning compile_commands
 
 
 class CMakeExtension(Extension):
@@ -38,10 +39,23 @@ class CMakeBuild(build_ext):
 
     def clean_compile_commands_db(self,filename):
         with open(filename,'r') as f:
-            lines = [ " ".join([ word for word in line.split(" ") if word != '-fopenmp' ]) for line in f.readlines()  ]
+            cmds = json.load(f)
+        for i,cmd in enumerate(cmds):
+            cmd_str = cmd['command']
+            compiler = cmd_str.split(" ")[0] # assuming compiler is always first
+            get_system_includes_cmd = "(echo | {compiler} -E -Wp,-v -)".format(compiler=compiler)
+            compiler_dump = subprocess.check_output(get_system_includes_cmd,
+                    stderr=subprocess.STDOUT,shell=True).split('\n')
+            compiler_dump = map(lambda x: x.strip(),compiler_dump)
+            inc_dirs = [ "-I" + line for line in compiler_dump if len(line)\
+                    and line[0] == '/' ]
+            filtered_cmd_str = " ".join([ word for word in cmd_str.split(" ") if word != '-fopenmp' ])
+            filtered_cmd_str += " " + " ".join(inc_dirs)
+            cmd_str = filtered_cmd_str
+            cmd['command'] = cmd_str
+            cmds[i] = cmd
         with open(filename,'w') as f:
-            for line in lines:
-                f.write(line)
+            json.dump(cmds,f,indent=2)
 
     def build_extension(self, ext):
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
