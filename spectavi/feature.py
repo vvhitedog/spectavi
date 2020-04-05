@@ -50,6 +50,63 @@ def sift_filter(im):
     return sift_ret.asarray()
 
 
+_sift_filter_batch_create = clib.sift_filter_batch_create
+_sift_filter_batch_create.restype = ct.c_void_p
+_sift_filter_batch_create.argtypes = None
+
+
+_sift_filter_batch_destroy = clib.sift_filter_batch_destroy
+_sift_filter_batch_destroy.restype = None
+_sift_filter_batch_destroy.argtypes = [ct.c_void_p]
+
+
+_sift_filter_batch_register_image = clib.sift_filter_batch_register_image
+_sift_filter_batch_register_image.restype = None
+_sift_filter_batch_register_image.argtypes = [ct.c_void_p,
+                                              ndpointer(ct.c_float, flags="C_CONTIGUOUS"),
+                                              ct.c_int,
+                                              ct.c_int,
+                                              ct.POINTER(NdArray),]
+
+
+_sift_filter_batch_process = clib.sift_filter_batch_process
+_sift_filter_batch_process.restype = None
+_sift_filter_batch_process.argtypes = [ct.c_void_p,
+                                       ct.c_int, ]
+
+
+def sift_filter_batch(ims,nthread=8):
+    """
+    Detect SIFT features and compute descriptors for a given list of images
+    `ims`.
+
+    Parameters
+    ----------
+    ims : list of float32 ndarrays
+        A list of (single channel/grayscale) image (2d).
+
+    Returns
+    -------
+    kps : list of float ndarray
+        A list of matrices of size `nkp` by 132 which contain the SIFT
+        descriptors of each keypoint, where `nkp` is the number of keypoints
+        found in each image. Returns one matrix for each input image.
+
+    """
+    for im in ims:
+        if len(im.shape) != 2:
+            raise TypeError("Only 2d images are supported.")
+    nims = len(ims)
+    nthread = np.min([nims,nthread])
+    sfb = _sift_filter_batch_create()
+    sift_rets = [ NdArray(dtype='float32') for _ in range(nims) ]
+    for im,ret in zip(ims,sift_rets):
+        hgt, wid = im.shape
+        _sift_filter_batch_register_image(sfb,im,wid,hgt,ret)
+    _sift_filter_batch_process(sfb,nthread)
+    _sift_filter_batch_destroy(sfb)
+    return [ ret.asarray() for ret in sift_rets]
+
 """
 ==================================================================================
 ann_hnswlib

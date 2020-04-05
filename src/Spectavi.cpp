@@ -136,6 +136,84 @@ void sift_filter(const float *im, int wid, int hgt, NdArray *out) {
   filt.get_data((float *)out->m_data);
 }
 
+namespace {
+  /**
+   * @brief Wrapper around an image object.
+   */
+  typedef struct {
+    int wid, hgt;
+    const float *im;
+  } SiftFilterImage;
+
+  /**
+   * @brief A list of images and outputs to compute in batch mode.
+   */
+  typedef struct {
+    std::vector<SiftFilterImage> ims;
+    std::vector<NdArray*> outs;
+  } SiftFilterBatch;
+}
+
+/**
+ * @brief Create a new sift-filter-batch object.
+ *
+ * @return SiftFilterBatch object as a void pointer
+ */
+void* sift_filter_batch_create() {
+  return new SiftFilterBatch();
+}
+
+/**
+ * @brief Register a image and output to compute in batch mode.
+ *
+ * @param _sfb - SiftFilterBatch object to use
+ * @param im - image data to register 
+ * @param wid - image width
+ * @param hgt - image height
+ * @param out - float32 NdArray pointer to register as output
+ */
+void sift_filter_batch_register_image(void *_sfb, const float *im,
+    int wid, int hgt, NdArray *out) {
+  auto sfb = static_cast<SiftFilterBatch*>(_sfb);
+  sfb->ims.emplace_back(SiftFilterImage{wid,hgt,im});
+  sfb->outs.emplace_back(out);
+}
+
+/**
+ * @brief Destroy a SiftFilterBatch on the heap.
+ *
+ * @param _sfb - SiftFilterBatch to destroy
+ */
+void sift_filter_batch_destroy(void *_sfb) {
+  auto sfb = static_cast<SiftFilterBatch*>(_sfb);
+  delete sfb;
+}
+
+/**
+ * @brief Process registered images in parallel as a batch.
+ *
+ * @param _sfb - SiftFilterBatch object to use
+ * @param nthread - number of threads to use in processing
+ */
+void sift_filter_batch_process(void *_sfb, int nthread) {
+  auto sfb = static_cast<SiftFilterBatch*>(_sfb);
+  int nims = sfb->ims.size();
+#pragma omp parallel for num_threads(nthread)
+  for ( int i = 0; i < nims; ++i  ){
+    auto im_meta = sfb->ims[i];
+    auto im = im_meta.im;
+    auto out = sfb->outs[i];
+    auto wid = im_meta.wid;
+    auto hgt = im_meta.hgt;
+    SiftFilter filt(im, hgt, wid);
+    filt.filter();
+    size_t nkp = filt.get_nkeypoints();
+    ndarray_set_size(out, nkp, SIFT_KP_SIZE);
+    ndarray_alloc(out);
+    filt.get_data((float *)out->m_data);
+  }
+}
+
 /**
  * @brief Approximate nearest neighbour (ANN) using HNSWlib (L2-distance
  * metric)
