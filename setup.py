@@ -22,6 +22,8 @@ class CMakeExtension(Extension):
 
 class CMakeBuild(build_ext):
 
+    OMP_FIX_DIR = '.omp_fix_dir'
+
     def run(self):
         try:
             out = subprocess.check_output(['cmake', '--version'])
@@ -37,21 +39,42 @@ class CMakeBuild(build_ext):
         for ext in self.extensions:
             self.build_extension(ext)
 
+
+    def clean_up_omp(self,cmd_str):
+        #find where omp exists, create a directory with only it in it
+        compiler = cmd_str.split(" ")[0] # assuming compiler is always first
+        get_system_includes_cmd = "(echo | {compiler} -E -Wp,-v -)".format(compiler=compiler)
+        compiler_dump = subprocess.check_output(get_system_includes_cmd,
+                stderr=subprocess.STDOUT,shell=True).split('\n')
+        compiler_dump = map(lambda x: x.strip(),compiler_dump)
+        inc_dirs = [ line for line in compiler_dump if len(line)\
+                and line[0] == '/' ]
+        omp_header_filepath = None
+        for d in inc_dirs:
+            tentative_header = os.path.join(d,'omp.h')
+            if os.path.exists(tentative_header):
+                omp_header_filepath = tentative_header
+                break
+        if omp_header_filepath is None:
+            raise RuntimeError('Could not find OMP header file omp.h in any of system include paths.')
+        if not os.path.exists(self.OMP_FIX_DIR):
+            os.mkdir(self.OMP_FIX_DIR)
+        new_header_path = os.path.join(self.OMP_FIX_DIR,'omp.h')
+        if not os.path.exists(new_header_path):
+            os.symlink(omp_header_filepath,new_header_path)
+
     def clean_compile_commands_db(self,filename):
         with open(filename,'r') as f:
             cmds = json.load(f)
         for i,cmd in enumerate(cmds):
             cmd_str = cmd['command']
-            compiler = cmd_str.split(" ")[0] # assuming compiler is always first
-            get_system_includes_cmd = "(echo | {compiler} -E -Wp,-v -)".format(compiler=compiler)
-            compiler_dump = subprocess.check_output(get_system_includes_cmd,
-                    stderr=subprocess.STDOUT,shell=True).split('\n')
-            compiler_dump = map(lambda x: x.strip(),compiler_dump)
-            inc_dirs = [ "-I" + line for line in compiler_dump if len(line)\
-                    and line[0] == '/' ]
-            filtered_cmd_str = " ".join([ word for word in cmd_str.split(" ") if word != '-fopenmp' ])
-            filtered_cmd_str += " " + " ".join(inc_dirs)
-            cmd_str = filtered_cmd_str
+            cmd_list = cmd_str.split(" ")
+            if any([ word == '-fopenmp' for word in cmd_list ]):
+                self.clean_up_omp(cmd_str)
+                filtered_cmd = [ word for word in cmd_list if word != '-fopenmp' ]
+                cmd_list = filtered_cmd[:1] + ['-I'+\
+                        os.path.abspath(self.OMP_FIX_DIR)] + filtered_cmd[1:]
+                cmd_str = " ".join(cmd_list)
             cmd['command'] = cmd_str
             cmds[i] = cmd
         with open(filename,'w') as f:
