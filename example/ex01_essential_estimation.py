@@ -64,6 +64,8 @@ def step1_sift_detect(args):
            for image_filename in args.images]
     with Timer('step1-computation'):
         siftkps = sift_filter_batch(ims)
+    print ('sift 1 #: ', siftkps[0].shape[0] )
+    print ('sift 2 #: ', siftkps[1].shape[0] )
     # Begin Visualize
     c_im = np.hstack(ims)
     fig = plt.figure()
@@ -88,12 +90,11 @@ def step2_match_keypoints(args, step1_out):
     with Timer('step2-computation'):
         if args.matching_method == 'bruteforce':
             nn_idx, nn_dist = nn_bruteforcel1k2(
-                _x.astype('uint8')+128, _y.astype('uint8')+128,
+                (_x+128).astype('uint8'),
+                (_y+128).astype('uint8'),
                 nthreads=multiprocessing.cpu_count())
         elif args.matching_method == 'cascading-hash':
-            m, n, g = 16, 4, 4
-            nn_idx, nn_dist = nn_cascading_hash(_x, _y,
-                    m=m, n=n, g=g)
+            nn_idx, nn_dist = nn_cascading_hash(_x, _y)
     ratio = nn_dist[:, 1] / nn_dist[:, 0].astype('float64')
     pass_idx = ratio >= args.min_ratio
     idx0, _ = nn_idx.T

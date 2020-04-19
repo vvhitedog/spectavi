@@ -312,10 +312,18 @@ _nn_cascading_hash.argtypes = [ndpointer(ct.c_float, flags="C_CONTIGUOUS"),
                                ct.POINTER(NdArray),
                                ct.POINTER(NdArray), ]
 
-def nn_cascading_hash(x, y, k=2, m=12, n=4, g=2):
+def nn_cascading_hash(x, y, k=2, m=None, n=2, g=2):
     xrows, xdim = x.shape
     yrows, ydim = y.shape
     assert ydim == xdim
+    if m is None: # auto-tune `m` if specified with None
+        # experiments show we want 6 points in each hash-code
+       mrows = max([xrows,yrows])
+       m = int(np.floor(np.log2(mrows / 6.)))
+       if m < 4: 
+           # using hashes is not appropriate:
+           return  nn_bruteforcel1k2((x+128).astype('uint8'),
+                   (y+128).astype('uint8'),nthreads=8)
     dim = xdim
     cashash_idx = NdArray(dtype='uint64')
     cashash_dist = NdArray(dtype='float32')
