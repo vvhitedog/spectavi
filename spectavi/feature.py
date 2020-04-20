@@ -107,6 +107,51 @@ def sift_filter_batch(ims,nthread=8):
     _sift_filter_batch_destroy(sfb)
     return [ ret.asarray() for ret in sift_rets]
 
+
+def sift_filter_striped(im,nthread=8,buffer_size=20):
+    """
+    Detect SIFT features and compute descriptors for one image using multiple
+    threads.
+
+    Parameters
+    ----------
+    im : float32 ndarray
+        A (single channel/grayscale) image (2d).
+
+    Returns
+    -------
+    kps : float ndarray
+        A matrix of size `nkp` by 132 which contains the SIFT descriptor for
+        each keypoint, where `nkp` is the number of keypoints found.
+
+    Note: this function is intended to compte similar results to `sift_filter`;
+    however, due to boundary effects of patching up an image, this is not
+    usually true. The results should be very similar between the two
+    computations.
+
+    """
+    hgt, _ = im.shape
+    split_hgt = int(np.ceil(hgt / float(nthread) ))
+    bboxes = list()
+    ims = list()
+    for iy in range(0,hgt,split_hgt):
+        iy_start = iy
+        iy_end = min([iy+split_hgt,hgt])
+        bf_start = max([iy_start-buffer_size,0])
+        bf_end = min([iy_end+buffer_size+1,hgt])
+        bboxes.append([iy_start,iy_end,bf_start])
+        ims.append(im[bf_start:bf_end])
+    sifts = sift_filter_batch(ims,nthread=nthread)
+    ret_sift = list()
+    for bb,sift in zip(bboxes,sifts):
+        iy_start,iy_end,bf_start = bb
+        sy = sift[:,1]
+        sy += bf_start
+        idx = (sy > iy_start) & (sy < iy_end)
+        ret_sift.append(sift[idx,:])
+    return np.vstack(ret_sift)
+
+
 """
 ==================================================================================
 ann_hnswlib

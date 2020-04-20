@@ -23,7 +23,7 @@ from matplotlib import collections as mc
 from util import imread, Timer
 from spectavi.feature import nn_bruteforcel1k2,nn_cascading_hash
 from spectavi.feature import normalize_to_ubyte_and_multiple_16_dim
-from spectavi.feature import sift_filter, sift_filter_batch
+from spectavi.feature import sift_filter, sift_filter_batch, sift_filter_striped
 from spectavi.mvg import ransac_fitter, dlt_triangulate, image_pair_rectification
 import argparse
 import multiprocessing
@@ -63,7 +63,11 @@ def step1_sift_detect(args):
             force_grayscale=True)
            for image_filename in args.images]
     with Timer('step1-computation'):
-        siftkps = sift_filter_batch(ims)
+        if args.use_sift_striped:
+            siftkps = [ sift_filter_striped(im,
+                nthread=args.cpu_count) for im in ims ] 
+        else:
+            siftkps = sift_filter_batch(ims)
     print ('sift 1 #: ', siftkps[0].shape[0] )
     print ('sift 2 #: ', siftkps[1].shape[0] )
     # Begin Visualize
@@ -92,7 +96,7 @@ def step2_match_keypoints(args, step1_out):
             nn_idx, nn_dist = nn_bruteforcel1k2(
                 (_x+128).astype('uint8'),
                 (_y+128).astype('uint8'),
-                nthreads=multiprocessing.cpu_count())
+                nthreads=args.cpu_count)
         elif args.matching_method == 'cascading-hash':
             nn_idx, nn_dist = nn_cascading_hash(_x, _y)
     ratio = nn_dist[:, 1] / nn_dist[:, 0].astype('float64')
@@ -140,10 +144,10 @@ def step3_estimate_essential_matrix(args, step2_out):
                           'high': .75, 'ultra': .8, 'uber': .9}
         ransac_options = {'required_percent_inliers':
                           ransac_quality[args.ransac_quality],
-                          'reprojection_error_allowed': 4e-4,
-                          'maximum_tries': 1000000,
+                          'reprojection_error_allowed': 3.5e-4,
+                          'maximum_tries': 10000000,
                           'find_best_even_in_failure': False,
-                          'singular_value_ratio_allowed': 1e-2,
+                          'singular_value_ratio_allowed': 1e-3,
                           'progressbar': False}
         ransac = ransac_fitter(x0, x1, options=ransac_options)
     # assert ransac['success']
@@ -268,8 +272,8 @@ if __name__ == '__main__':
                         help='images to estimate essential matrix')
     parser.add_argument('K', metavar='K', type=str,
                         help='intrinsics for camera (assumption is one camera taking two images')
-    parser.add_argument('--min_ratio', default=2., type=float, action='store',
-                        help='min-ratio of second min distance to min distance that is accepted (default=2.)')
+    parser.add_argument('--min_ratio', default=1.85, type=float, action='store',
+                        help='min-ratio of second min distance to min distance that is accepted (default=1.85)')
     parser.add_argument('--percent_to_show', default=.1, type=float, action='store',
                         help='percent of matches to show (for legibility) (default=.1)')
     parser.add_argument('--ransac_quality', default='ultra', choices=['low', 'medium', 'high', 'ultra', 'uber'], action='store',
@@ -283,5 +287,9 @@ if __name__ == '__main__':
                         help='resampling factor (along epipolar lines) when performing rectification (default=1.)')
     parser.add_argument('--cache', action='store_true',
                         help='cache the keypoint matches per session, if a cached output exists, execution starts at step 3 (default=False)')
+    parser.add_argument('--use_sift_striped', action='store_true',
+                        help='use striped version of SIFT keypoint computation, may result in slightly different results, but is more efficient (default=False)')
+    parser.add_argument('--cpu_count', default=8, type=int, action='store',
+                        help='number of cpus to use for multi-threaded code (default=8)')
     _args = parser.parse_args()
     run(_args)
