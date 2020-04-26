@@ -272,15 +272,15 @@ if __name__ == '__main__':
                         help='images to estimate essential matrix')
     parser.add_argument('K', metavar='K', type=str,
                         help='intrinsics for camera (assumption is one camera taking two images')
-    parser.add_argument('--min_ratio', default=1.85, type=float, action='store',
-                        help='min-ratio of second min distance to min distance that is accepted (default=1.85)')
+    parser.add_argument('--min_ratio', default=1.75, type=float, action='store',
+                        help='min-ratio of second min distance to min distance that is accepted (default=1.75)')
     parser.add_argument('--percent_to_show', default=.1, type=float, action='store',
                         help='percent of matches to show (for legibility) (default=.1)')
     parser.add_argument('--ransac_quality', default='ultra', choices=['low', 'medium', 'high', 'ultra', 'uber'], action='store',
                         help='quality of ransac fit to perform (default=ultra)')
     parser.add_argument('--matching_method', default='cascading-hash', choices=['bruteforce', 'cascading-hash'], action='store',
-                        help='which method to use, bruteforce = brute force matching, cascading-hash = variant"+\
-                                " on cascading hash method (default=cascading-hash)')
+                        help='which method to use, bruteforce = brute force matching, cascading-hash = variant'+\
+                        ' on cascading hash method (default=cascading-hash)')
     parser.add_argument('--outdir', default='ex01_out', type=str,
                         help='output is placed in this directory (default="ex01_out")')
     parser.add_argument('--rsf', default=1., type=float, action='store',
