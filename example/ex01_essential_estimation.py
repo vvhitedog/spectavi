@@ -144,7 +144,7 @@ def step3_estimate_essential_matrix(args, step2_out):
                           'high': .75, 'ultra': .8, 'uber': .9}
         ransac_options = {'required_percent_inliers':
                           ransac_quality[args.ransac_quality],
-                          'reprojection_error_allowed': 3.3e-4,
+                          'reprojection_error_allowed': 3.35e-4,
                           'maximum_tries': 10000000,
                           'find_best_even_in_failure': False,
                           'singular_value_ratio_allowed': 1e-3,
